@@ -1,0 +1,6 @@
+require("set_keymaps")
+require("install_lazy_if_missing")
+require("lazy").setup("plugins")
+require("set_options")
+require("lsp")
+require("create_autocommands")
