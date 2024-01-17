@@ -12,9 +12,15 @@ return {
   -- https://github.com/airblade/vim-gitgutter
   -- "airblade/vim-gitgutter",
 
-  -- git blame
+  -- blame shown at the end of the line
   -- https://github.com/f-person/git-blame.nvim
-  { "f-person/git-blame.nvim", event = "VeryLazy" },
+  {
+    "f-person/git-blame.nvim",
+    event = "VeryLazy",
+    config = function()
+      vim.g.gitblame_date_format = "%Y-%m-%d %A %H:%M:%S"
+    end,
+  },
 
   {
     -- Adds git related signs to the gutter, as well as utilities for managing changes
