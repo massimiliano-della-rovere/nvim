@@ -16,6 +16,36 @@
     "<CMD>bnext<CR>",
     { noremap = true, desc = "Next Buffer" })
 
+  -- move lines up- or down-ward
+for _, key in pairs({ "j", "Down" }) do
+  vim.keymap.set(
+    "n", "<M-" .. key .. ">",
+    ":move .+1<CR>==",
+    { noremap = true, desc = "Shift line downward" })
+  vim.keymap.set(
+    "v", "<M-" .. key .. ">",
+    ":move '>+1<CR>gv=gv",
+    { noremap = true, desc = "Shift selection downward" })
+  vim.keymap.set(
+    "i", "<M-" .. key .. ">",
+    ":move .+1<CR>==gi",
+    { noremap = true, desc = "Shift line downward" })
+end
+for _, key in pairs({ "k", "Up" }) do
+  vim.keymap.set(
+    "n", "<M-" .. key .. ">",
+    ":move .-2<CR>==",
+    { noremap = true, desc = "Shift line upward" })
+  vim.keymap.set(
+    "i", "<M-" .. key .. ">",
+    ":move .-2<CR>==gi",
+    { noremap = true, desc = "Shift line upward" })
+  vim.keymap.set(
+    "v", "<M-" .. key .. ">",
+    ":move <-2<CR>gv=gv",
+    { noremap = true, desc = "Shift selection upward" })
+end
+
 -- Keymaps for better default experience
 -- See `:help vim.keymap.set()`
 vim.keymap.set(
@@ -25,7 +55,7 @@ vim.keymap.set(
 
 -- Remap for dealing with word wrap
 vim.keymap.set(
-  "n", "k", 
+  "n", "k",
   "v:count == 0 ? 'gk' : 'k'",
   { expr = true, silent = true })
 vim.keymap.set(
