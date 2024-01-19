@@ -71,6 +71,9 @@ return {
         lspconfig[lspname].setup({ capabilities = capabilities })
       end
 
+      -- add border to the :Lsp*-command window
+      require("lspconfig.ui.windows").default_options.border = "single"
+
       -- Global mappings.
       -- See `:help vim.diagnostic.*` for documentation on any of the below functions
       vim.keymap.set(
