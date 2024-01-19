@@ -115,7 +115,7 @@ return {
     config = function()
       require("aerial").setup({
         default_direction = "prefer_right",
-        open_automatic = true,
+        open_automatic = false,
         show_guides = true,
 
         filter_kind = false,
@@ -127,8 +127,8 @@ return {
 
       vim.keymap.set(
         "n", "<leader>ld",
-        "<CMD>AerialToggle right<CR>",
-        { desc = "Aerial: Document Symbols (Right)" })
+        "<CMD>AerialToggle<CR>",
+        { desc = "Aerial: Document Symbols" })
 
       for _, key_combination in ipairs({"ls", "vs"}) do
         vim.keymap.set(
