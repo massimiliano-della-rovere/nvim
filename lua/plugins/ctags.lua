@@ -63,7 +63,7 @@ return {
         "LICENSE",
         "README.md"
       }
-      vim.g.gutentags_ctags_tagfile = "tags"
+      vim.g.gutentags_ctags_tagfile = "ctags"
       if vim.fn.isdirectory(ctags_dir) == 0 then
         vim.fn.mkdir(ctags_dir, "p")
       end
