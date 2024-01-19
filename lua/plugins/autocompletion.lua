@@ -70,8 +70,10 @@ return {
         },
         -- https://github.com/hrsh7th/nvim-cmp/blob/main/lua/cmp/config/mapping.lua
         mapping = cmp.mapping.preset.insert({
-          ["<C-b>"] = cmp.mapping.scroll_docs(-4),
-          ["<C-f>"] = cmp.mapping.scroll_docs(4),
+          ["<PgUp>"] = cmp.mapping.scroll_docs(-4),
+          -- ["<C-b>"] = cmp.mapping.scroll_docs(-4),
+          ["<PgDown>"] = cmp.mapping.scroll_docs(4),
+          -- ["<C-f>"] = cmp.mapping.scroll_docs(4),
           ["<C-Space>"] = cmp.mapping.complete({}),
           ["<CR>"] = cmp.mapping.confirm({
             behavior = cmp.ConfirmBehavior.Replace,
@@ -79,23 +81,23 @@ return {
           }),
           ["<Tab>"] = cmp.mapping(function(fallback)
             if cmp.visible() then
-              cmp.select_next_item()
+              cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
             elseif luasnip.expandable() then
               luasnip.expand()
             elseif luasnip.expand_or_locally_jumpable() then
               luasnip.expand_or_jump()
             else
-              cmp.complete()
-              -- fallback()
+              fallback()
+              -- cmp.complete()
             end
           end, { "i", "s" }),
           ["<S-Tab>"] = cmp.mapping(function(fallback)
             if cmp.visible() then
-              cmp.select_prev_item()
+              cmp.select_prev_item({ behavior = cmp.SelectBehavior.Select })
             elseif luasnip.locally_jumpable(-1) then
               luasnip.jump(-1)
-            elseif check_backspace() then
-              fallback()
+            -- elseif check_backspace() then
+            --   fallback()
             else
               fallback()
             end
