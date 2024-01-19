@@ -12,8 +12,11 @@ return {
       "hrsh7th/cmp-path", -- path/filesystem completion
       "hrsh7th/cmp-cmdline", -- command line completion
       "hrsh7th/cmp-git", -- git files and data completion
+      "hrsh7th/cmp-calc", -- math expressions
+      "dmitmel/cmp-digraphs", -- vim digraphs
       "saadparwaiz1/cmp_luasnip", -- snippet completion
       "rafamadriz/friendly-snippets", -- VSCode-like snippets
+      "lukas-reineke/cmp-rg", -- use rg matches to feed cmp
       -- snippet completion engine
       {
         -- https://github.com/L3MON4D3/LuaSnip
@@ -30,29 +33,32 @@ return {
       require("luasnip.loaders.from_vscode").lazy_load()
       luasnip.config.setup({})
 
-      local function check_backspace()
-        local col = vim.fn.col(".") - 1
-        return col == 0 or vim.fn.getline("."):sub(col, col):match("%s")
-      end
+      -- local function check_backspace()
+      --   local col = vim.fn.col(".") - 1
+      --   return col == 0 or vim.fn.getline("."):sub(col, col):match("%s")
+      -- end
 
       cmp.setup({
         preselect = cmp.PreselectMode.None,
         formatting = {
+          fields = { "kind", "abbr", "menu", },
           format = lspkind.cmp_format({
             mode = "symbol_text",
             menu = ({
-              rg = "[Rg]",
               buffer = "[Buffer]",
-              nvim_lsp = "[LSP]",
-              luasnip = "[Snippet]",
-              -- vsnip = "[Snippet]",
-              tags = "[Tag]",
-              path = "[Path]",
-              orgmode = "[Org]",
+              calc = "[Calc]",
+              digraphs = "[Digraphs]",
               git = "[Git]",
-              nvim_lua = "[LUA]",
+              nvim_lsp = "[LSP]",
               latex_symbols = "[Latex]",
+              luasnip = "[Snippet]",
               ["vim-dadbod-completion"] = "[DB]",
+              nvim_lua = "[LUA]",
+              orgmode = "[Org]",
+              path = "[Path]",
+              rg = "[Rg]",
+              tags = "[Tag]",
+              -- vsnip = "[Snippet]",
             })
           })
         },
@@ -62,7 +68,7 @@ return {
           end,
         },
         completion = {
-          completeopt = "menu,menuone,noinsert,noselect"
+          completeopt = "menu,menuone,noinsert", -- ,noselect",
         },
         window = {
           completion = cmp.config.window.bordered(),
@@ -112,6 +118,8 @@ return {
             { name = "rg", keyword_length = 3 },
             { name = "path" },
             { name = "orgmode" },
+            { name = "calc" },
+            { name = "digraphs" },
           })
       })
 
