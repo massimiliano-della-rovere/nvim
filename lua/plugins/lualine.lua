@@ -21,7 +21,7 @@ return {
           lualine_a = { "mode" },
           lualine_b = { "branch", "diff", "diagnostics" },
           lualine_c = { { "filename", path = 3 }, },
-          lualine_x = { "encoding", "fileformat", "filetype" },
+          lualine_x = { "%{gutentags#statusline()}", "encoding", "fileformat", "filetype" },
           lualine_y = { "progress", "selectioncount" },
           lualine_z = { "location", "searchcount" },
         },
