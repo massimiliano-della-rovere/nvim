@@ -3,9 +3,9 @@ local default_language_servers = {
   "cssls",         -- CSS
   "dockerls",      -- Docker
   "html",          -- HTML
-  "jedi_language_server", -- Python
   "jsonls",        -- JSON
   "lua_ls",        -- LUA
+  "pyright",       -- Python
   "sqlls",         -- SQL
   "taplo",         -- TOML
   "tsserver",      -- Javascript and Typescript
@@ -120,27 +120,22 @@ return {
             "n",
             "gD",
             vim.lsp.buf.declaration,
-            vim.tbl_extend("error", { desc = "Jump to Declaration of symbol" }, opts)
-          )
+            vim.tbl_extend("error", { desc = "Jump to Declaration of symbol" }, opts))
           vim.keymap.set(
             "n",
             "gd",
             vim.lsp.buf.definition,
-            vim.tbl_extend("error", { desc = "Jump to Definition of symbol" }, opts)
-          )
+            vim.tbl_extend("error", { desc = "Jump to Definition of symbol" }, opts))
           vim.keymap.set(
             "n",
             "K",
             vim.lsp.buf.hover,
-            vim.tbl_extend("error", { desc = "Display information about symbol" },
-              opts)
-          )
+            vim.tbl_extend("error", { desc = "Display information about symbol" }, opts))
           vim.keymap.set(
             "n",
             "gi",
             vim.lsp.buf.implementation,
-            vim.tbl_extend("error", { desc = "Jump to Implementation of symbol" }, opts)
-          )
+            vim.tbl_extend("error", { desc = "Jump to Implementation of symbol" }, opts))
           vim.keymap.set(
             "n", "<leader>li",
             vim.lsp.buf.incoming_calls,
@@ -152,47 +147,43 @@ return {
           vim.keymap.set(
             "n", "<leader>lk",
             vim.lsp.buf.signature_help,
-            vim.tbl_extend("error", { desc = "Show the Signature of symbol" }, opts)
-          )
+            vim.tbl_extend("error", { desc = "Show the Signature of symbol" }, opts))
           vim.keymap.set(
             "n",
             "<leader>lt",
             vim.lsp.buf.type_definition,
-            vim.tbl_extend("error", { desc = "Show Type of symbol" }, opts)
-          )
+            vim.tbl_extend("error", { desc = "Show Type of symbol" }, opts))
           vim.keymap.set(
             "n",
             "<leader>lr",
             vim.lsp.buf.rename,
-            vim.tbl_extend("error", { desc = "Rename symbol" }, opts)
-          )
+            vim.tbl_extend("error", { desc = "Rename symbol" }, opts))
           vim.keymap.set(
             { "n", "v" },
             "<leader>la",
             vim.lsp.buf.code_action,
-            vim.tbl_extend("error", { desc = "Code Actions" }, opts)
-          )
+            vim.tbl_extend("error", { desc = "Code Actions" }, opts))
           vim.keymap.set(
             "n",
             "gr",
             vim.lsp.buf.references,
-            vim.tbl_extend("error", { desc = "Show References to symbol" }, opts)
-          )
-          vim.keymap.set("n", "<leader>lf", function()
-            vim.lsp.buf.format({ async = true })
-          end, vim.tbl_extend("error", { desc = "Format buffer" }, opts))
+            vim.tbl_extend("error", { desc = "Show References to symbol" }, opts))
+          vim.keymap.set(
+            "n", "<leader>lf",
+            function()
+              vim.lsp.buf.format({ async = true })
+            end,
+            vim.tbl_extend("error", { desc = "Format buffer" }, opts))
 
           -- workspace
           vim.keymap.set(
             "n", "<leader>wa",
             vim.lsp.buf.add_workspace_folder,
-            vim.tbl_extend("error", { desc = "Add Folder to workspace" }, opts)
-          )
+            vim.tbl_extend("error", { desc = "Add Folder to workspace" }, opts))
           vim.keymap.set(
             "n", "<leader>wr",
             vim.lsp.buf.remove_workspace_folder,
-            vim.tbl_extend("error", { desc = "Remove Folder from workspace" }, opts)
-          )
+            vim.tbl_extend("error", { desc = "Remove Folder from workspace" }, opts))
           vim.keymap.set(
             "n", "<leader>wl",
             function()
