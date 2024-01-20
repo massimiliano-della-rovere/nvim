@@ -23,7 +23,7 @@ return {
           lualine_a = { "mode" },
           lualine_b = { "branch", "diff", "diagnostics" },
           lualine_c = { { "filename", path = 3 }, },
-          lualine_x = { 
+          lualine_x = {
             "%{gutentags#statusline()}",
             {
               lazy_status.updates,
