@@ -11,6 +11,18 @@ return {
     opts = {},
   },
 
+  -- highlight word under the cursor
+  {
+    -- https://github.com/RRethy/vim-illuminate
+    "RRethy/vim-illuminate",
+    config = function()
+      vim.api.nvim_set_hl(0, "IlluminatedWordText", { underdouble = true, bold = true })
+      vim.api.nvim_set_hl(0, "IlluminatedWordRead", { underdouble = true, bold = true })
+      vim.api.nvim_set_hl(0, "IlluminatedWordWrite", { underdouble = true, bold = true })
+      require("illuminate").configure()
+    end,
+  },
+
   -- highlight match symbol area
   -- must be after colorscheme
   {
@@ -35,7 +47,7 @@ return {
     "HiPhish/rainbow-delimiters.nvim",
     config = function()
       -- This module contains a number of default definitions
-      local rainbow_delimiters = require "rainbow-delimiters"
+      local rainbow_delimiters = require("rainbow-delimiters")
 
       vim.g.rainbow_delimiters = {
         strategy = {
