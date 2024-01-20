@@ -6,6 +6,8 @@ return {
     "nvim-lualine/lualine.nvim",
     dependencies = { "nvim-tree/nvim-web-devicons" },
     config = function()
+      local lazy_status = require("lazy.status")
+
       require("lualine").setup({
         extensions = { "aerial", "fugitive", "lazy", "mason", "mundo", "neo-tree", "nvim-dap-ui", "oil" },
         options = {
@@ -21,7 +23,14 @@ return {
           lualine_a = { "mode" },
           lualine_b = { "branch", "diff", "diagnostics" },
           lualine_c = { { "filename", path = 3 }, },
-          lualine_x = { "%{gutentags#statusline()}", "encoding", "fileformat", "filetype" },
+          lualine_x = { 
+            "%{gutentags#statusline()}",
+            {
+              lazy_status.updates,
+              cond = lazy_status.has_updates,
+              -- color = { fg = "#ff9e64" },
+            },
+            "encoding", "fileformat", "filetype" },
           lualine_y = { "progress", "selectioncount" },
           lualine_z = { "location", "searchcount" },
         },
