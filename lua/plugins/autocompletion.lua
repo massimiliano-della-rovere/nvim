@@ -39,7 +39,7 @@ return {
       -- end
 
       cmp.setup({
-        preselect = cmp.PreselectMode.None,
+        preselect = cmp.PreselectMode.Item, -- None,
         formatting = {
           fields = { "kind", "abbr", "menu", },
           format = lspkind.cmp_format({

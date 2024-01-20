@@ -63,10 +63,23 @@ vim.opt.updatetime = 250
 vim.opt.timeoutlen = 300
 
 -- Set completeopt to have a better completion experience
-vim.opt.completeopt = "menuone,noselect,noinsert"
+-- vim.opt.completeopt = "menuone,noselect,noinsert"
 
 -- NOTE: You should make sure your terminal supports this
 vim.opt.termguicolors = true
+
+-- set border to floating windows
+local _border = "single"
+
+vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(
+  vim.lsp.handlers.hover,
+  { border = _border })
+
+vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(
+  vim.lsp.handlers.signature_help,
+  { border = _border })
+
+vim.diagnostic.config{float = { border = _border }}
 
 -- new split windows
 vim.opt.splitbelow = true
