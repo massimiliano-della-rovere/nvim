@@ -26,6 +26,5 @@ do
       callback = CreateHighlightGitBlameInline,
       group = highlight_group,
       pattern = pattern,
-      desc = "event_name = " .. event_name .. ", pattern = " .. pattern,
     })
 end
