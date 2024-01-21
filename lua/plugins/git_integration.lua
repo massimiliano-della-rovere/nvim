@@ -18,7 +18,24 @@ return {
     "f-person/git-blame.nvim",
     event = "VeryLazy",
     config = function()
-      vim.g.gitblame_date_format = "%Y-%m-%d %a %H:%M:%S"
+      -- change the language of date_format
+      -- require("lua-timeago").set_language(require("lua-timeago/languages/en"))
+
+      require("gitblame").setup({
+        enabled = true,
+        date_format = "%Y-%m-%d %a %H:%M:%S",
+        message_template = "  <author> • <date> • <summary> • <sha>",
+        message_when_not_committed = "  Not Committed Yet",
+        highlight_group = "GitBlameInline",
+        set_extmark_options = {},
+        display_virtual_text = true,
+        ignored_filetypes = {},
+        delay = 0,
+        virtual_text_column = nil,
+        -- open GitBlameOpenFileURL and GitBlameCopyFileURL at the latest blame commit
+        -- (in other words, the commit marked by the blame)
+        use_blame_commit_file_urls = true,
+      })
     end,
   },
 
