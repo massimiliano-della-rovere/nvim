@@ -3,6 +3,23 @@ local ensure_installed = {
   "debugpy",
 }
 
+local dap_ui_symbols = {
+  icons = { expanded = "🞃", collapsed = "🞂", current_frame = "→" },
+  controls = {
+    icons = {
+      pause = "⏸",
+      play = "⯈",
+      step_into = "↴",
+      step_over = "↷",
+      step_out = "↑",
+      step_back = "↶",
+      run_last = "🗘",
+      terminate = "🕱",
+      disconnect = "⏻"
+    }
+  }
+}
+
 return {
 
   -- debug adapter
@@ -69,25 +86,7 @@ return {
     config = function()
       local dap, dapui = require("dap"), require("dapui")
 
-      dapui.setup({
-        -- Set icons to characters that are more likely to work in every terminal.
-        --    Feel free to remove or use ones that you like more! :)
-        --    Don"t feel like these are good choices.
-        icons = { expanded = "▾", collapsed = "▸", current_frame = "*" },
-        controls = {
-          icons = {
-            pause = "⏸",
-            play = "▶",
-            step_into = "⏎",
-            step_over = "⏭",
-            step_out = "⏮",
-            step_back = "b",
-            run_last = "▶▶",
-            terminate = "⏹",
-            disconnect = "⏏",
-          },
-        },
-      })
+      require("dapui").setup(dap_ui_symbols)
 
       dap.listeners.after.event_initialized.dapui_config = dapui.open
       dap.listeners.before.attach.dapui_config = dapui.open
@@ -98,18 +97,6 @@ return {
       vim.keymap.set("n", "<leader>dC", dapui.close, { desc = "DAP UI: Close" })
       vim.keymap.set("n", "<leader>dO", dapui.open, { desc = "DAP UI: Open" })
       vim.keymap.set("n", "<leader>dT", dapui.toggle, { desc = "DAP UI: Toggle" })
-    end,
-  },
-
-  -- type checker
-  {
-    -- https://github.com/folke/neodev.nvim
-    "folke/neodev.nvim",
-    dependencies = { "rcarriga/nvim-dap-ui" },
-    config = function()
-      require("neodev").setup({
-        library = { plugins = { "nvim-dap-ui" }, types = true },
-      })
     end,
   },
 
