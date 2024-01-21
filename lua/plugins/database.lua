@@ -23,8 +23,13 @@ return {
         ft = { "sql", "mysql", "plsql" },
         lazy = true,
         config = function()
+          local autocomplete_group = vim.api.nvim_create_augroup(
+            "vimrc_autocompletion",
+            { clear = true })
+
           vim.api.nvim_create_autocmd("FileType", {
             pattern = { "sql" },
+            group = autocomplete_group,
             command = [[setlocal omnifunc=vim_dadbod_completion#omni]],
           })
 
@@ -32,9 +37,6 @@ return {
           --   require("cmp").setup.buffer({ sources = { { name = "vim-dadbod-completion" } } })
           -- end
 
-          local autocomplete_group = vim.api.nvim_create_augroup(
-            "vimrc_autocompletion",
-            { clear = true })
           vim.api.nvim_create_autocmd("FileType", {
             pattern = { "sql", "mysql", "plsql" },
             group = autocomplete_group,
