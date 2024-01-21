@@ -18,6 +18,8 @@ return {
     "f-person/git-blame.nvim",
     event = "VeryLazy",
     config = function()
+      require("highlight_git_blame")
+
       -- change the language of date_format
       -- require("lua-timeago").set_language(require("lua-timeago/languages/en"))
 
