@@ -13,6 +13,7 @@ return {
       "hrsh7th/cmp-cmdline", -- command line completion
       "hrsh7th/cmp-git", -- git files and data completion
       "hrsh7th/cmp-calc", -- math expressions
+      "andersevenrud/cmp-tmux", -- tmux as source
       "dmitmel/cmp-digraphs", -- vim digraphs
       "saadparwaiz1/cmp_luasnip", -- snippet completion
       "rafamadriz/friendly-snippets", -- VSCode-like snippets
@@ -58,6 +59,7 @@ return {
               path = "[Path]",
               rg = "[Rg]",
               tags = "[Tag]",
+              tmux = "[Tmux]",
               -- vsnip = "[Snippet]",
             })
           })
