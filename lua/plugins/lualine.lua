@@ -11,7 +11,7 @@ return {
       require("lualine").setup({
         extensions = { "aerial", "fugitive", "lazy", "mason", "mundo", "neo-tree", "nvim-dap-ui", "oil" },
         options = {
-          theme = "dracula",
+          theme = "codedark",
           icons_enabled = true,
           -- theme = "onedark",
           -- component_separators = { left = "", right = ""}, -- = "|",
