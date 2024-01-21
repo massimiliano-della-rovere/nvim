@@ -27,24 +27,28 @@ return {
             "vimrc_autocompletion",
             { clear = true })
 
-          vim.api.nvim_create_autocmd("FileType", {
-            pattern = { "sql" },
-            group = autocomplete_group,
-            command = [[setlocal omnifunc=vim_dadbod_completion#omni]],
-          })
+          vim.api.nvim_create_autocmd(
+            "FileType",
+            {
+              pattern = { "sql" },
+              group = autocomplete_group,
+              command = [[setlocal omnifunc=vim_dadbod_completion#omni]],
+            })
 
           -- local function db_completion()
           --   require("cmp").setup.buffer({ sources = { { name = "vim-dadbod-completion" } } })
           -- end
 
-          vim.api.nvim_create_autocmd("FileType", {
-            pattern = { "sql", "mysql", "plsql" },
-            group = autocomplete_group,
-            callback = function()
-              -- vim.schedule(db_completion)
-              require("cmp").setup.buffer({ sources = { { name = "vim-dadbod-completion" } } })
-            end,
-          })
+          vim.api.nvim_create_autocmd(
+            "FileType",
+            {
+              pattern = { "sql", "mysql", "plsql" },
+              group = autocomplete_group,
+              callback = function()
+                -- vim.schedule(db_completion)
+                require("cmp").setup.buffer({ sources = { { name = "vim-dadbod-completion" } } })
+              end,
+            })
         end,
       },
     },
