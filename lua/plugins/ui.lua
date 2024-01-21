@@ -22,6 +22,11 @@ return {
       require("which-key").register({
         ["<leader>"] = { name = "VISUAL <leader>", _ = "which_key_ignore" },
         ["<leader>b"] = { name = "+db", _ = "which_key_ignore"  },
+        ["<leader>c"] = { name = "+colorscheme", _ = "which_key_ignore" },
+        ["<leader>cc"] = { name = "+colorscheme/catpuccin", _ = "which_key_ignore" },
+        ["<leader>cg"] = { name = "+colorscheme/gruvbox", _ = "which_key_ignore" },
+        ["<leader>ck"] = { name = "+colorscheme/kanagawa", _ = "which_key_ignore" },
+        ["<leader>ct"] = { name = "+colorscheme/tokyonight", _ = "which_key_ignore" },
         ["<leader>d"] = { name = "+debug", _ = "which_key_ignore" },
         ["<leader>f"] = { name = "+find", _ = "which_key_ignore" },
         ["<leader>g"] = { name = "+git/telescope", _ = "which_key_ignore" },
