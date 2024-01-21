@@ -230,7 +230,7 @@ return {
       vim.keymap.set(
         "n", "<leader>rw",
         function()
-return ":IncRename " .. vim.fn.expand("<cword>")
+          return ":IncRename " .. vim.fn.expand("<cword>")
         end,
         { expr = true, desc = "IncRename: Symbol under cursor" })
     end,
