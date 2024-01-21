@@ -16,36 +16,11 @@ local default_language_servers = {
 
 return {
 
-  -- LSP, DAP, Linters and Formatters manager
-  {
-    -- https://github.com/williamboman/mason.nvim
-    "williamboman/mason.nvim",
-    config = function()
-      require("mason").setup({
-        ui = { border = "single" },
-      })
-    end,
-  },
-
-  -- Bridge for LSPs installed using Mason
-  {
-    -- https://github.com/williamboman/mason-lspconfig.nvim
-    "williamboman/mason-lspconfig.nvim",
-    dependencies = { "williamboman/mason.nvim", },
-    config = function()
-      require("mason-lspconfig").setup({
-        automatic_installation = true,
-        ensure_installed = default_language_servers,
-      })
-    end,
-  },
-
   -- Communication hooks between Neovim and LSPs
   {
     -- https://github.com/neovim/nvim-lspconfig
     "neovim/nvim-lspconfig",
     dependencies = {
-      "williamboman/mason-lspconfig.nvim",
 
       -- LSP updates as text overlay
       {
@@ -60,18 +35,9 @@ return {
         "folke/neodev.nvim",
         opts = {}, -- NOTE: `opts = {}` is the same as calling `require('neodev').setup({})`
       },
+
     },
     config = function()
-      -- from autocompletion.lua:
-      -- The nvim-cmp almost supports LSP's capabilities,
-      -- so You should advertise it to LSP servers..
-      local capabilities = require("cmp_nvim_lsp").default_capabilities()
-      -- end from autocompletion.lua part
-
-      local lspconfig = require("lspconfig")
-      for _, lspname in ipairs(default_language_servers) do
-        lspconfig[lspname].setup({ capabilities = capabilities })
-      end
 
       -- add border to the :Lsp*-command window
       require("lspconfig.ui.windows").default_options.border = "single"
@@ -82,26 +48,22 @@ return {
         "n",
         "<leader>lw",
         vim.diagnostic.open_float,
-        { desc = "Show diagnostic in a floating window" }
-      )
+        { desc = "Show diagnostic in a floating window" })
       vim.keymap.set(
         "n",
         "[d",
         vim.diagnostic.goto_prev,
-        { desc = "Move to previous diagnostic in the current buffer" }
-      )
+        { desc = "Move to previous diagnostic in the current buffer" })
       vim.keymap.set(
         "n",
         "]d",
         vim.diagnostic.goto_next,
-        { desc = "Move to next diagnostic in the current buffer" }
-      )
+        { desc = "Move to next diagnostic in the current buffer" })
       vim.keymap.set(
         "n",
         "<leader>lq",
         vim.diagnostic.setloclist,
-        { desc = "Add buffer diagnostics to the location list" }
-      )
+        { desc = "Add buffer diagnostics to the location list" })
 
       -- Use LspAttach autocommand to only map the following keys
       -- after the language server attaches to the current buffer
@@ -195,6 +157,67 @@ return {
     end,
   },
 
+  -- LSP, DAP, Linters and Formatters manager
+  {
+    -- https://github.com/williamboman/mason.nvim
+    "williamboman/mason.nvim",
+    config = function()
+      require("mason").setup({
+        ui = { border = "single" },
+      })
+    end,
+  },
+
+  -- Bridge for LSPs installed using Mason
+  {
+    -- https://github.com/williamboman/mason-lspconfig.nvim
+    "williamboman/mason-lspconfig.nvim",
+    dependencies = {
+      "williamboman/mason.nvim",
+      "neovim/nvim-lspconfig",
+    },
+    config = function()
+      local lspconfig = require("lspconfig")
+      local capabilities = require("cmp_nvim_lsp").default_capabilities()
+      require("mason-lspconfig").setup({
+        automatic_installation = true,
+        ensure_installed = default_language_servers,
+        handlers = {
+          function (server_name)
+            -- from :help mason-lspconfig.setup_handlers()
+            -- ===========================================
+            -- Register the provided {handlers}, to be called by mason when
+            -- an installed server supported by lspconfig is ready to be
+            -- set up.
+            -- 
+            --  ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+            -- → When this function is called, all servers that are          ←
+            -- → currently installed will be considered ready to be set up.  ←
+            -- → When a new server is installed during a session, it will be ←
+            -- → considered ready to be set up when installation succeeds.   ←
+            --  ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑
+            --
+            -- {handlers} is a table where the keys are the name of an
+            -- lspconfig server, and the values are the function to be
+            -- called when that server is ready to be set up
+            -- (i.e. is installed).
+            --
+            -- You may also pass a default handler that will be called
+            -- when no dedicated handler is provided.
+            -- This is done by providing a function without a key
+            -- (see example below).
+
+            -- from autocompletion.lua:
+            -- ========================
+            -- The nvim-cmp almost supports LSP's capabilities,
+            -- so You should advertise it to LSP servers..
+            lspconfig[server_name].setup({ capabilities = capabilities })
+          end
+        }
+      })
+    end,
+  },
+
   -- LSP renaming with immediate visual feedback
   {
     -- https://github.com/smjonas/inc-rename.nvim
@@ -207,9 +230,10 @@ return {
       vim.keymap.set(
         "n", "<leader>rw",
         function()
-          return ":IncRename " .. vim.fn.expand("<cword>")
+return ":IncRename " .. vim.fn.expand("<cword>")
         end,
         { expr = true, desc = "IncRename: Symbol under cursor" })
     end,
-  }
+  },
+
 }
