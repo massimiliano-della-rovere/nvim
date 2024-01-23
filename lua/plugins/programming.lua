@@ -16,9 +16,9 @@ return {
     -- https://github.com/RRethy/vim-illuminate
     "RRethy/vim-illuminate",
     config = function()
-      vim.api.nvim_set_hl(0, "IlluminatedWordText", { underdouble = true, bold = true })
-      vim.api.nvim_set_hl(0, "IlluminatedWordRead", { underdouble = true, bold = true })
-      vim.api.nvim_set_hl(0, "IlluminatedWordWrite", { underdouble = true, bold = true })
+      vim.api.nvim_set_hl(0, "IlluminatedWordText", { altfont = true, standout = true })
+      vim.api.nvim_set_hl(0, "IlluminatedWordRead", { altfont = true, standout = true })
+      vim.api.nvim_set_hl(0, "IlluminatedWordWrite", { altfont = true, standout = true })
       require("illuminate").configure()
     end,
   },
