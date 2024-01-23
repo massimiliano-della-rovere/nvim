@@ -9,8 +9,14 @@ return {
       local lazy_status = require("lazy.status")
 
       require("lualine").setup({
-        extensions = { "aerial", "fugitive", "lazy", "mason", "mundo", "neo-tree", "nvim-dap-ui", "oil" },
+        extensions = { 
+          "aerial", "fugitive", "lazy", "mason", "mundo", "neo-tree", "nvim-dap-ui", "oil"
+        },
         options = {
+          disabled_filetypes = { 
+            "dap-repl",
+            "dapui_breakpoints", "dapui_console", "dapui_scopes", "dapui_watches",
+          },
           theme = "codedark",
           icons_enabled = true,
           -- theme = "onedark",
