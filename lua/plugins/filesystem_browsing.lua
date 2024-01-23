@@ -24,6 +24,12 @@ return {
   {
     -- https://github.com/stevearc/oil.nvim
     "stevearc/oil.nvim",
+    -- disabling NetRW has the side effect of making (n)vim unable to download spellfiles!
+    -- if you need to download/restore your spell files, uncomment temporarily the next line,
+    -- download the spell files, and comment it out again.
+    -- cmd = "Oil",
+    -- see dpetka2001's comment about the previous line
+    -- https://www.reddit.com/r/neovim/comments/19d0we4/need_help_with_missing_download_spell_file/
     config = function()
       require("oil").setup({
         default_file_explorer = true,

@@ -111,7 +111,12 @@ vim.opt.foldnestmax = 10
 --  vim.api.nvim_set_hl(0, "Folded", { bg = "#403000", fg = "#FF40FF" })
 -- end
 
--- spell languages
+-- spell language
+vim.opt.encoding = "utf-8"
+-- make sure the spellfile directory exists, sometimes nvim fails to create it 
+-- when downloading spellfiles
+-- if NetRW is disabled, downloading of spellfiles fails!
+-- See the comment in the filesystem_browsing.lua file in the Oil plugin section.
+vim.fn.mkdir(vim.fn.stdpath("data") .. "site/spell", "p")
 vim.opt.spell = false
 vim.opt.spelllang = { "en_us", "it", "eo" }
-
