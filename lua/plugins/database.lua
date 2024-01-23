@@ -23,32 +23,6 @@ return {
         ft = { "sql", "mysql", "plsql" },
         lazy = true,
         config = function()
-          local autocomplete_group = vim.api.nvim_create_augroup(
-            "vimrc_autocompletion",
-            { clear = true })
-
-          vim.api.nvim_create_autocmd(
-            "FileType",
-            {
-              pattern = { "sql" },
-              group = autocomplete_group,
-              command = [[setlocal omnifunc=vim_dadbod_completion#omni]],
-            })
-
-          -- local function db_completion()
-          --   require("cmp").setup.buffer({ sources = { { name = "vim-dadbod-completion" } } })
-          -- end
-
-          vim.api.nvim_create_autocmd(
-            "FileType",
-            {
-              pattern = { "sql", "mysql", "plsql" },
-              group = autocomplete_group,
-              callback = function()
-                -- vim.schedule(db_completion)
-                require("cmp").setup.buffer({ sources = { { name = "vim-dadbod-completion" } } })
-              end,
-            })
         end,
       },
     },
@@ -62,34 +36,59 @@ return {
     init = function()
       -- Your DBUI configuration
       vim.g.db_ui_use_nerd_fonts = 1
+      vim.g.db_ui_save_location = vim.fn.stdpath("data") .. "/db_ui"
+      -- vim.g.db_ui_disable_mappings = 1
+
+      local autocomplete_group = vim.api.nvim_create_augroup(
+        "vimrc_autocompletion",
+        { clear = true })
+
+      vim.api.nvim_create_autocmd(
+        "FileType",
+        {
+          pattern = { "sql" },
+          group = autocomplete_group,
+          command = [[setlocal omnifunc=vim_dadbod_completion#omni]],
+        })
+
+      -- local function db_completion()
+      --   require("cmp").setup.buffer({ sources = { { name = "vim-dadbod-completion" } } })
+      -- end
+
+      vim.api.nvim_create_autocmd(
+        "FileType",
+        {
+          pattern = { "sql", "mysql", "plsql" },
+          group = autocomplete_group,
+          callback = function()
+            -- vim.schedule(db_completion)
+            require("cmp").setup.buffer({ sources = { { name = "vim-dadbod-completion" } } })
+          end,
+        })
 
       vim.api.nvim_set_keymap(
-        "n",
-        "<leader>ba",
+        "n", "<leader>ba",
         ":DBUIAddConnection<CR>",
-        { noremap = true, desc = "DB Add connection" })
+        { noremap = true, desc = "DB: Add connection" })
 
       vim.api.nvim_set_keymap(
         "n", "<leader>bu",
         ":DBUIToggle<CR>",
-        { noremap = true, desc = "DB toggle UI" })
+        { noremap = true, desc = "DB: Toggle UI" })
       vim.api.nvim_set_keymap(
-        "n",
-        "<leader>bf",
+        "n", "<leader>bf",
         ":DBUIFindBuffer<CR>",
-        { noremap = true, desc = "DB Find buffer" })
+        { noremap = true, desc = "DB: Find buffer" })
 
       vim.api.nvim_set_keymap(
-        "n",
-        "<leader>br",
+        "n", "<leader>br",
         ":DBUIRenameBuffer<CR>",
-        { noremap = true, desc = "DB Rename buffer" })
+        { noremap = true, desc = "DB: Rename buffer" })
 
       vim.api.nvim_set_keymap(
-        "n",
-        "<leader>bq",
+        "n", "<leader>bq",
         ":DBUILastQueryInfo<CR>",
-        { noremap = true, desc = "DB last Query info" })
+        { noremap = true, desc = "DB: last Query info" })
     end,
   },
 
