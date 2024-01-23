@@ -27,9 +27,6 @@ return {
     -- https://github.com/mfussenegger/nvim-dap
     "mfussenegger/nvim-dap",
     dependencies = {
-      -- Creates a beautiful debugger UI
-      "rcarriga/nvim-dap-ui",
-
       -- Installs the debug adapters for you
       "williamboman/mason.nvim",
 
@@ -58,14 +55,35 @@ return {
       require("debugging_bash_debug_adapter").configure_bashdb(dap)
       require("debugging_debugpy").configure_debugpy(dap)
 
-      vim.keymap.set("n", "<leader>db", dap.continue, { desc = "Debug: Set Breakpoint" })
+      vim.keymap.set("n", "<leader>db", dap.toggle_breakpoint, { desc = "Debug: Toggle Breakpoint" })
       vim.keymap.set("n", "<leader>dc", dap.continue, { desc = "Debug: Start/Continue" })
       vim.keymap.set("n", "<leader>di", dap.step_into, { desc = "Debug: Step Into" })
       vim.keymap.set("n", "<leader>dl", dap.run_last, { desc = "Debug: Run Last" })
       vim.keymap.set("n", "<leader>do", dap.step_out, { desc = "Debug: Step Out" })
-      vim.keymap.set("n", "<leader>dt", dap.toggle_breakpoint, { desc = "Debug: Toggle Breakpoint" })
       vim.keymap.set("n", "<leader>dr", dap.repl.open, { desc = "Debug: Open REPL" })
       vim.keymap.set("n", "<leader>dv", dap.step_over, { desc = "Debug: Step Over" })
+    end,
+  },
+
+  -- debug adapter UI: Creates a beautiful debugger UI
+  {
+    -- https://github.com/rcarriga/nvim-dap-ui
+    "rcarriga/nvim-dap-ui",
+    dependencies = { "mfussenegger/nvim-dap" },
+    config = function()
+      local dap, dapui = require("dap"), require("dapui")
+      dapui.setup()
+      require("dapui").setup(dap_ui_symbols)
+
+      dap.listeners.after.event_initialized.dapui_config = dapui.open
+      dap.listeners.before.attach.dapui_config = dapui.open
+      dap.listeners.before.launch.dapui_config = dapui.open
+      dap.listeners.before.event_terminated.dapui_config = dapui.close
+      dap.listeners.before.event_exited.dapui_config = dapui.close
+
+      vim.keymap.set("n", "<leader>dC", dapui.close, { desc = "DAP UI: Close" })
+      vim.keymap.set("n", "<leader>dO", dapui.open, { desc = "DAP UI: Open" })
+      vim.keymap.set("n", "<leader>dT", dapui.toggle, { desc = "DAP UI: Toggle" })
 
       local widgets = require("dap.ui.widgets")
 
@@ -79,28 +97,6 @@ return {
       vim.keymap.set("n", "<leader>dp", widgets.preview, { desc = "Debug: Preview" })
       vim.keymap.set("n", "<leader>df", show("frames"), { desc = "Debug: Frames" })
       vim.keymap.set("n", "<leader>ds", show("scopes"), { desc = "Debug: Scopes" })
-    end,
-  },
-
-  -- debug adapter UI
-  {
-    -- https://github.com/rcarriga/nvim-dap-ui
-    "rcarriga/nvim-dap-ui",
-    dependencies = { "mfussenegger/nvim-dap" },
-    config = function()
-      local dap, dapui = require("dap"), require("dapui")
-
-      require("dapui").setup(dap_ui_symbols)
-
-      dap.listeners.after.event_initialized.dapui_config = dapui.open
-      dap.listeners.before.attach.dapui_config = dapui.open
-      dap.listeners.before.launch.dapui_config = dapui.open
-      dap.listeners.before.event_terminated.dapui_config = dapui.close
-      dap.listeners.before.event_exited.dapui_config = dapui.close
-
-      vim.keymap.set("n", "<leader>dC", dapui.close, { desc = "DAP UI: Close" })
-      vim.keymap.set("n", "<leader>dO", dapui.open, { desc = "DAP UI: Open" })
-      vim.keymap.set("n", "<leader>dT", dapui.toggle, { desc = "DAP UI: Toggle" })
     end,
   },
 
