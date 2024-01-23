@@ -66,30 +66,26 @@ return {
           end,
         })
 
-      vim.api.nvim_set_keymap(
-        "n", "<leader>ba",
-        ":DBUIAddConnection<CR>",
-        { noremap = true, desc = "DB: Add connection" })
-
-      vim.api.nvim_set_keymap(
-        "n", "<leader>bu",
-        ":DBUIToggle<CR>",
-        { noremap = true, desc = "DB: Toggle UI" })
-      vim.api.nvim_set_keymap(
-        "n", "<leader>bf",
-        ":DBUIFindBuffer<CR>",
-        { noremap = true, desc = "DB: Find buffer" })
-
-      vim.api.nvim_set_keymap(
-        "n", "<leader>br",
-        ":DBUIRenameBuffer<CR>",
-        { noremap = true, desc = "DB: Rename buffer" })
-
-      vim.api.nvim_set_keymap(
-        "n", "<leader>bq",
-        ":DBUILastQueryInfo<CR>",
-        { noremap = true, desc = "DB: last Query info" })
+      local key_prefix = "<leader>b"
+      for _, cfg in ({
+        { key = "a", command = "DBUIAddConnection", desc = "DB: Add connection" },
+        { key = "f", command = "DBUIFindBuffer", desc = "DB: Find Buffer" },
+        { key = "q", command = "DBUILastQueryInfo", desc = "DB: Last Query info" },
+        { key = "r", command = "DBUIRenameBuffer", desc = "DB: Rename Buffer" },
+        { key = "u", command = "DBUIToggle", desc = "DB: Toggle UI" },
+      }) do
+        vim.api.nvim_set_keymap(
+          "n", key_prefix .. cfg.key,
+          "<CMD>" .. cfg.command .. "<CR>",
+          { noremap = true, desc = cfg.desc })
+      end
     end,
+  },
+
+  -- SSH tunnel for dadbod/DB connections
+  {
+    -- https://github.com/pbogut/vim-dadbod-ssh
+    "pbogut/vim-dadbod-ssh",
   },
 
 }
