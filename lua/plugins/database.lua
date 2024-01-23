@@ -67,7 +67,7 @@ return {
         })
 
       local key_prefix = "<leader>b"
-      for _, cfg in ({
+      for _, cfg in pairs({
         { key = "a", command = "DBUIAddConnection", desc = "DB: Add connection" },
         { key = "f", command = "DBUIFindBuffer", desc = "DB: Find Buffer" },
         { key = "q", command = "DBUILastQueryInfo", desc = "DB: Last Query info" },
