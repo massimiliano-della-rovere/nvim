@@ -40,6 +40,7 @@ return {
       -- end
 
       cmp.setup({
+        experimental = { ghost_text = true },
         preselect = cmp.PreselectMode.Item, -- None,
         formatting = {
           fields = { "kind", "abbr", "menu", },
@@ -70,7 +71,7 @@ return {
           end,
         },
         completion = {
-          completeopt = "menu,menuone,noinsert", -- ,noselect",
+          completeopt = "menu,menuone,noinsert,noselect",
         },
         window = {
           completion = cmp.config.window.bordered(),
@@ -85,7 +86,7 @@ return {
           ["<C-Space>"] = cmp.mapping.complete({}),
           ["<CR>"] = cmp.mapping.confirm({
             behavior = cmp.ConfirmBehavior.Replace,
-            select = true,
+            select = false,
           }),
           ["<Tab>"] = cmp.mapping(function(fallback)
             if cmp.visible() then
@@ -110,6 +111,12 @@ return {
               fallback()
             end
           end, { "i", "s" }),
+          ["<C-l>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+              return cmp.complete_common_string()
+            end
+            fallback()
+          end, { 'i', 'c' }),
         }),
         sources = cmp.config.sources(
           {
