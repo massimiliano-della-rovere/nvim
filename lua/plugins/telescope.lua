@@ -211,6 +211,11 @@ return {
         "n", "<leader>gS",
         builtin.git_stash,
         { desc = "Git Stash" })
+      -- extensions and integrations
+      vim.keymap.set(
+        "n", "<leader>vn",
+        "<CMD>TodoTelescope<CR>",
+        { desc = 'View "Notes" tags' })
 
       -- Docker
       local docker_prefix = "<leader>k"

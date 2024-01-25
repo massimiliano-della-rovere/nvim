@@ -14,9 +14,9 @@ return {
     },
     config = function()
       vim.keymap.set(
-        "n", "<leader>n",
+        "n", "<leader>f ",
         "<CMD>Neotree filesystem reveal left<CR>",
-        { desc = "Open filebrowser" })
+        { desc = "Neotree: Open filebrowser" })
     end,
   },
 

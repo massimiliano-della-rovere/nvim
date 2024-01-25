@@ -34,6 +34,7 @@ return {
         ["<leader>k"] = { name = "+docker", _ = "which_key_ignore" },
         ["<leader>l"] = { name = "+lsp/code", _ = "which_key_ignore" },
         ["<leader>o"] = { name = "+oil", _ = "which_key_ignore" },
+        ["<leader>n"] = { name = "+notes", _ = "which_key_ignore" },
         ["<leader>r"] = { name = "+rename", _ = "which_key_ignore" },
         ["<leader>s"] = { name = "+spectre", _ = "which_key_ignore" },
         ["<leader>S"] = { name = "+surround", _ = "which_key_ignore" },

@@ -106,15 +106,38 @@ return {
     "folke/trouble.nvim",
     dependencies = { "nvim-tree/nvim-web-devicons" },
     config = function()
-      require("trouble").setup({})
+      local trouble = require("trouble")
+      trouble.setup({})
 
-      local trouble_toggle = require("trouble").toggle
-      vim.keymap.set("n", "<leader>xx", function() trouble_toggle() end, { desc = "Trouble: toggle" })
-      vim.keymap.set("n", "<leader>xw", function() trouble_toggle("workspace_diagnostics") end, { desc = "Trouble: Workspace Diagnostics" })
-      vim.keymap.set("n", "<leader>xd", function() trouble_toggle("document_diagnostics") end, { desc = "Trouble: Document Diagnostics" })
-      vim.keymap.set("n", "<leader>xq", function() trouble_toggle("quickfix") end, { desc = "Trouble: Quickfix list" })
-      vim.keymap.set("n", "<leader>xl", function() trouble_toggle("loclist") end, { desc = "Trouble: Location list" })
-      vim.keymap.set("n", "<leader>xr", function() trouble_toggle("lsp_references") end, { desc = "Trouble: LSP References" })
+      local trouble_toggle = trouble.toggle
+      vim.keymap.set(
+        "n", "<leader>xd",
+        function() trouble_toggle("document_diagnostics") end,
+        { desc = "Trouble: Document Diagnostics" })
+      vim.keymap.set(
+        "n", "<leader>xl",
+        function() trouble_toggle("loclist") end,
+        { desc = "Trouble: Location list" })
+      vim.keymap.set(
+        "n", "<leader>xq",
+        function() trouble_toggle("quickfix") end,
+        { desc = "Trouble: Quickfix list" })
+      vim.keymap.set(
+        "n", "<leader>xr",
+        function() trouble_toggle("lsp_references") end,
+        { desc = "Trouble: LSP References" })
+      vim.keymap.set(
+        "n", "<leader>xt",
+        "<CMD>TodoTrouble<CR>",
+        { desc = "Notes: view tags" })
+      vim.keymap.set(
+        "n", "<leader>xw",
+        function() trouble_toggle("workspace_diagnostics") end,
+        { desc = "Trouble: Workspace Diagnostics" })
+      vim.keymap.set(
+        "n", "<leader>xx",
+        function() trouble_toggle() end,
+        { desc = "Trouble: toggle" })
     end
   },
 

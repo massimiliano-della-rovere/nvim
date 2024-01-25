@@ -23,6 +23,65 @@ return {
     end,
   },
 
+  -- highlight specific words, such as "TODO", "FIX", "NOTE", "WARNING", etc
+  {
+    -- https://github.com/folke/todo-comments.nvim
+    "folke/todo-comments.nvim",
+    dependencies = { "nvim-lua/plenary.nvim" },
+    config = function()
+      local todo = require("todo-comments")
+      todo.setup()
+
+      vim.keymap.set(
+        "n", "]t",
+        function()
+          todo.jump_next()
+        end,
+        { desc = "Next todo comment" })
+
+      vim.keymap.set(
+        "n", "[t",
+        function()
+          todo.jump_prev()
+        end,
+        { desc = "Previous todo comment" })
+
+      vim.keymap.set(
+        "n", "]T",
+        function()
+          todo.jump_next({keywords = { "ERROR", "WARNING" }})
+        end,
+        { desc = "Next error/warning todo comment" })
+
+      vim.keymap.set(
+        "n", "[T",
+        function()
+          todo.jump_prev({keywords = { "ERROR", "WARNING" }})
+        end,
+        { desc = "Previous error/warning todo comment" })
+
+      vim.keymap.set(
+        "n", "<leader>nl",
+        "<CMD>TodoLocList<CR>",
+        { desc = "Notes: Open in Location list" })
+
+      vim.keymap.set(
+        "n", "<leader>nq",
+        "<CMD>TodoQuickFix<CR>",
+        { desc = "Notes: Open in Quickfix list" })
+
+      vim.keymap.set(
+        "n", "<leader>nt",
+        "<CMD>TodoTroble<CR>",
+        { desc = "Notes: Open in Trouble" })
+
+      vim.keymap.set(
+        "n", "<leader>nv",
+        "<CMD>TodoTelscope<CR>",
+        { desc = "Notes: Open in Telescope" })
+    end,
+  },
+
   -- highlight match symbol area
   -- must be after colorscheme
   {
