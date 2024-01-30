@@ -25,18 +25,6 @@ return {
       local telescope = require("telescope")
 
       telescope.setup({
-        defaults = {
-          vimgrep_arguments = {
-            "rg",
-            "--color=never",
-            "--no-heading",
-            "--with-filename",
-            "--line-number",
-            "--column",
-            "--smart-case",
-            "--hidden",
-          },
-        },
         extensions = {
           ["ui-select"] = { require("telescope.themes").get_dropdown({}) }
         },
@@ -50,137 +38,141 @@ return {
       -- file pickers
       vim.keymap.set(
         "n", "<leader>ff",
-         builtin.find_files,
-         { desc = "Files in CWD" })
+        builtin.find_files,
+        { desc = "Files in CWD" })
+      vim.keymap.set(
+        "n", "<leader>fh",
+        function() builtin.find_files({ hidden = true }) end,
+        { desc = "Files in CWD" })
       vim.keymap.set(
         "n", "<leader>fg",
-         builtin.live_grep,
-         { desc = "String in CWD" })
+        builtin.live_grep,
+        { desc = "String in CWD" })
       vim.keymap.set(
         "n", "<leader>fG",
-         builtin.git_files,
-         { desc = "String in Git files" })
+        builtin.git_files,
+        { desc = "String in Git files" })
       vim.keymap.set(
         "n", "<leader>fs",
-         builtin.grep_string,
-         { desc = "Under cursor in CWD" })
+        builtin.grep_string,
+        { desc = "Under cursor in CWD" })
       -- vim pickers
       vim.keymap.set(
         "n", "<leader>va",
-         builtin.autocommands,
-         { desc = "View Autocommands" })
+        builtin.autocommands,
+        { desc = "View Autocommands" })
       vim.keymap.set(
         "n", "<leader>vb",
-         builtin.buffers,
-         { desc = "View Buffers" })
+        builtin.buffers,
+        { desc = "View Buffers" })
       vim.keymap.set(
         "n", "<leader>vB",
-         builtin.builtin,
-         { desc = "View Builtins" })
+        builtin.builtin,
+        { desc = "View Builtins" })
       vim.keymap.set(
         "n", "<leader>vc",
-         builtin.commands,
-         { desc = "View Commands" })
+        builtin.commands,
+        { desc = "View Commands" })
       vim.keymap.set(
         "n", "<leader>ve",
-         telescope.extensions.emoji.emoji,
-         { desc = "View Emoji" })
+        telescope.extensions.emoji.emoji,
+        { desc = "View Emoji" })
       vim.keymap.set(
         "n", "<leader>vf",
-         builtin.filetypes,
+        builtin.filetypes,
         { desc = "View Filetypes" })
       vim.keymap.set(
         "n", "<leader>vg",
-         telescope.extensions.glyph.glyph,
-         { desc = "View Glyph" })
+        telescope.extensions.glyph.glyph,
+        { desc = "View Glyph" })
       vim.keymap.set(
         "n", "<leader>vh",
-         builtin.highlights,
-         { desc = "View Highlights" })
+        builtin.highlights,
+        { desc = "View Highlights" })
       vim.keymap.set(
         "n", "<leader>vi",
-         builtin.lsp_incoming_calls,
-         { desc = "View Incoming Calls" })
+        builtin.lsp_incoming_calls,
+        { desc = "View Incoming Calls" })
       vim.keymap.set(
         "n", "<leader>vj",
-         builtin.jumplist,
-         { desc = "View Jumps" })
+        builtin.jumplist,
+        { desc = "View Jumps" })
       vim.keymap.set(
         "n", "<leader>vk",
-         builtin.keymaps,
-         { desc = "View Keymaps" })
+        builtin.keymaps,
+        { desc = "View Keymaps" })
       vim.keymap.set(
-         "n", "<leader>vl",
-         builtin.loclist,
-         { desc = "View Location List" })
+        "n", "<leader>vl",
+        builtin.loclist,
+        { desc = "View Location List" })
       vim.keymap.set(
-         "n", "<leader>vm",
-         builtin.marks,
-         { desc = "View Marks" })
+        "n", "<leader>vm",
+        builtin.marks,
+        { desc = "View Marks" })
       vim.keymap.set(
         "n", "<leader>vo",
-         builtin.lsp_outgoing_calls,
-         { desc = "View Outgoing Calls" })
+        builtin.lsp_outgoing_calls,
+        { desc = "View Outgoing Calls" })
       vim.keymap.set(
-         "n", "<leader>vO",
-         builtin.vim_options,
-         { desc = "View Vim Options" })
+        "n", "<leader>vO",
+        builtin.vim_options,
+        { desc = "View Vim Options" })
       vim.keymap.set(
-         "n", "<leader>vp",
-         builtin.man_pages,
-         { desc = "View Man Pages" })
+        "n", "<leader>vp",
+        builtin.man_pages,
+        { desc = "View Man Pages" })
       vim.keymap.set(
-         "n", "<leader>vq",
-         builtin.quickfix,
-         { desc = "View Quickfix List" })
+        "n", "<leader>vq",
+        builtin.quickfix,
+        { desc = "View Quickfix List" })
       vim.keymap.set(
-         "n", '<leader>v"',
-         builtin.registers,
-         { desc = "View Registers" })
+        "n", '<leader>v"',
+        builtin.registers,
+        { desc = "View Registers" })
       vim.keymap.set(
-         "n", "<leader>vr",
-         builtin.reloader,
-         { desc = "View Lua Modules" })
+        "n", "<leader>vr",
+        builtin.reloader,
+        { desc = "View Lua Modules" })
       vim.keymap.set(
-         "n", "<leader>vs",
-         builtin.symbols,
-         { desc = "View Symbols" })
+        "n", "<leader>vs",
+        builtin.symbols,
+        { desc = "View Symbols" })
       vim.keymap.set(
-         "n", "<leader>vt",
-         builtin.tags,
-         { desc = "View Tags" })
+        "n", "<leader>vt",
+        builtin.tags,
+        { desc = "View Tags" })
       vim.keymap.set(
-         "n", "<leader>vu",
-         telescope.extensions.undo.undo,
-         { desc = "View Undo tree" })
+        "n", "<leader>vu",
+        telescope.extensions.undo.undo,
+        { desc = "View Undo tree" })
       vim.keymap.set(
-         "n", "<leader>vT",
-         builtin.current_buffer_tags,
-         { desc = "View Tags in Buffer" })
+        "n", "<leader>vT",
+        builtin.current_buffer_tags,
+        { desc = "View Tags in Buffer" })
       vim.keymap.set(
-         "n", "<leader>vz",
-         builtin.spell_suggest,
-         { desc = "View Spelling Suggestions" })
+        "n", "<leader>vz",
+        builtin.spell_suggest,
+        { desc = "View Spelling Suggestions" })
       vim.keymap.set(
-         "n", "<leader>v!",
-         builtin.treesitter,
-         { desc = "View Treesitter symbols" })
+        "n", "<leader>v!",
+        builtin.treesitter,
+        { desc = "View Treesitter symbols" })
       vim.keymap.set(
-         "n", "<leader>v/",
-         builtin.search_history,
-         { desc = "View Search History" })
+        "n", "<leader>v/",
+        builtin.search_history,
+        { desc = "View Search History" })
       vim.keymap.set(
-         "n", "<leader>v&",
-         builtin.command_history,
-         { desc = "View Command History" })
+        "n", "<leader>v&",
+        builtin.command_history,
+        { desc = "View Command History" })
       vim.keymap.set(
         "n", "<leader>v?",
-         builtin.help_tags,
-         { desc = "View HelpTags" })
+        builtin.help_tags,
+        { desc = "View HelpTags" })
       vim.keymap.set(
         "n", "<leader>v~",
-         builtin.colorscheme,
-         { desc = "View Colorschemes" })
+        builtin.colorscheme,
+        { desc = "View Colorschemes" })
       -- lsp pickers
       vim.keymap.set(
         "n", "<leader>vd",
