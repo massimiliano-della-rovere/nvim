@@ -27,13 +27,16 @@ vim.opt.hlsearch = true
 vim.wo.number = true
 vim.wo.relativenumber = true
 
+-- keep signcolumn always of to avoid screen jumping
+vim.opt.signcolumn = "yes"
+
 -- Enable mouse mode
 vim.opt.mouse = "a"
 
 -- Sync clipboard between OS and Neovim.
 --  Remove this option if you want your OS clipboard to remain independent.
 --  See `:help 'clipboard'`
-vim.opt.clipboard = "unnamedplus"
+vim.opt.clipboard = "unnamed,unnamedplus"
 
 -- Enable break indent
 vim.opt.breakindent = true
@@ -102,7 +105,8 @@ vim.opt.showbreak = "⮎" -- ⤷ +++
 -- folding
 -- vim.opt.foldmethod = "syntax"
 -- vim.opt.foldenable = true
-vim.opt.foldlevel = 0
+vim.opt.foldlevel = 99
+vim.opt.foldlevelstart = 99
 vim.opt.foldmethod = "expr"
 vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
 vim.opt.foldminlines = 5
