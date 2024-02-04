@@ -177,6 +177,27 @@ return {
     config = function()
       local lspconfig = require("lspconfig")
       local capabilities = require("cmp_nvim_lsp").default_capabilities()
+      local border = {
+        {"🭽", "FloatBorder"},
+        {"▔", "FloatBorder"},
+        {"🭾", "FloatBorder"},
+        {"▕", "FloatBorder"},
+        {"🭿", "FloatBorder"},
+        {"▁", "FloatBorder"},
+        {"🭼", "FloatBorder"},
+        {"▏", "FloatBorder"},
+      }
+
+      -- LSP settings (for overriding per client)
+      local handlers =  {
+        ["textDocument/hover"] = vim.lsp.with(
+          vim.lsp.handlers.hover,
+          { border = border }),
+        ["textDocument/signatureHelp"] = vim.lsp.with(
+          vim.lsp.handlers.signature_help,
+          { border = border }),
+      }
+
       require("mason-lspconfig").setup({
         automatic_installation = true,
         ensure_installed = default_language_servers,
@@ -209,10 +230,89 @@ return {
             -- ========================
             -- The nvim-cmp almost supports LSP's capabilities,
             -- so You should advertise it to LSP servers..
-            lspconfig[server_name].setup({ capabilities = capabilities })
+            local util = require("lspconfig/util")
+
+            local path = util.path
+
+            local function get_python_path(workspace)
+              -- Use activated virtualenv.
+              if vim.env.VIRTUAL_ENV then
+                return path.join(vim.env.VIRTUAL_ENV, "bin", "python")
+              end
+
+              -- Find and use virtualenv from pipenv in workspace directory.
+              local match = vim.fn.glob(path.join(workspace, "Pipfile"))
+              if match ~= "" then
+                local venv = vim.fn.trim(vim.fn.system("PIPENV_PIPFILE=" .. match .. " pipenv --venv"))
+                return path.join(venv, "bin", "python")
+              end
+
+              -- Fallback to system Python.
+              return vim.fn.exepath("python3") or vim.fn.exepath("python") or "python"
+            end
+
+            local setup_args = {
+              capabilities = capabilities,
+              handlers = handlers,
+              on_attach = function(client, bufnr)
+                vim.api.nvim_create_autocmd("CursorHold", {
+                  buffer = bufnr,
+                  callback = function()
+                    local opts = {
+                      focusable = false,
+                      close_events = { "BufLeave", "CursorMoved", "InsertEnter", "FocusLost" },
+                      border = 'rounded',
+                      source = 'always',
+                      prefix = ' ',
+                      scope = 'cursor',
+                    }
+                    vim.diagnostic.open_float(nil, opts)
+                  end
+                })
+              end,
+            }
+            -- if server_name == "pyright" then
+            --   setup_args.root_dir = function (fname)
+            --     if string.match(fname, "/tcwa/code/tcwa2") then
+            --       return "/tcwa/code/tcwa2/code/backend"
+            --     elseif string.match(fname, "/tcwa/code") then
+            --       return "/tcwa/code"
+            --     else 
+            --       return "/"
+            --   end
+            -- end
+            lspconfig[server_name].setup(setup_args)
           end
         }
       })
+
+      -- https://github.com/neovim/nvim-lspconfig/wiki/UI-Customization
+      -- diagnostic beahviour and look
+      vim.diagnostic.config({
+        signs = true,
+        underline = true,
+        update_in_insert = true,
+        severity_sort = false,
+        virtual_text = {
+          source = "always",  -- Or "if_many"
+        },
+        float = {
+          source = "always",  -- Or "if_many"
+        },
+      })
+      local signs = { Error = "󰅚 ", Warn = "󰀪 ", Hint = "󰌶 ", Info = " " }
+      for type, icon in pairs(signs) do
+        local hl = "DiagnosticSign" .. type
+        vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })
+      end
+
+      -- diagnostics on hover @ cursor position
+      -- vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
+      --   group = vim.api.nvim_create_augroup("float_diagnostic_cursor", { clear = true }),
+      --   callback = function ()
+      --     vim.diagnostic.open_float(nil, {focus=false, scope="cursor"})
+      --   end
+      -- })
     end,
   },
 
