@@ -48,7 +48,7 @@ vim.opt.undofile = true
 ---@diagnostic disable-next-line: param-type-mismatch
 vim.opt.undodir = vim.fn.expand(vim.fn.stdpath("state")) .. "/undo"
 if vim.fn.isdirectory(vim.o.undodir) == 0 then
-  vim.fn.mkdir(vim.opt.undodir, "p")
+  vim.fn.mkdir(vim.o.undodir, "p")
 end
 
 -- search wraps at top from bottom
