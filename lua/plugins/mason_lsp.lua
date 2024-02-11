@@ -234,22 +234,22 @@ return {
 
             local path = util.path
 
-            local function get_python_path(workspace)
-              -- Use activated virtualenv.
-              if vim.env.VIRTUAL_ENV then
-                return path.join(vim.env.VIRTUAL_ENV, "bin", "python")
-              end
-
-              -- Find and use virtualenv from pipenv in workspace directory.
-              local match = vim.fn.glob(path.join(workspace, "Pipfile"))
-              if match ~= "" then
-                local venv = vim.fn.trim(vim.fn.system("PIPENV_PIPFILE=" .. match .. " pipenv --venv"))
-                return path.join(venv, "bin", "python")
-              end
-
-              -- Fallback to system Python.
-              return vim.fn.exepath("python3") or vim.fn.exepath("python") or "python"
-            end
+            -- local function get_python_path(workspace)
+            --   -- Use activated virtualenv.
+            --   if vim.env.VIRTUAL_ENV then
+            --     return path.join(vim.env.VIRTUAL_ENV, "bin", "python")
+            --   end
+            --
+            --   -- Find and use virtualenv from pipenv in workspace directory.
+            --   local match = vim.fn.glob(path.join(workspace, "Pipfile"))
+            --   if match ~= "" then
+            --     local venv = vim.fn.trim(vim.fn.system("PIPENV_PIPFILE=" .. match .. " pipenv --venv"))
+            --     return path.join(venv, "bin", "python")
+            --   end
+            --
+            --   -- Fallback to system Python.
+            --   return vim.fn.exepath("python3") or vim.fn.exepath("python") or "python"
+            -- end
 
             local setup_args = {
               capabilities = capabilities,
@@ -261,10 +261,10 @@ return {
                     local opts = {
                       focusable = false,
                       close_events = { "BufLeave", "CursorMoved", "InsertEnter", "FocusLost" },
-                      border = 'rounded',
-                      source = 'always',
-                      prefix = ' ',
-                      scope = 'cursor',
+                      border = "rounded",
+                      source = "always",
+                      prefix = " ",
+                      scope = "cursor",
                     }
                     vim.diagnostic.open_float(nil, opts)
                   end
@@ -323,7 +323,10 @@ return {
     config = function()
       require("inc_rename").setup()
 
-      vim.keymap.set("n", "<leader>rs", ":IncRename ", { desc = "IncRename: Symbol" })
+      vim.keymap.set(
+        "n", "<leader>rs",
+        ":IncRename ",
+        { desc = "IncRename: Symbol" })
 
       vim.keymap.set(
         "n", "<leader>rw",

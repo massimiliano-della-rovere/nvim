@@ -82,7 +82,7 @@ vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(
   vim.lsp.handlers.signature_help,
   { border = _border })
 
-vim.diagnostic.config{float = { border = _border }}
+vim.diagnostic.config({float = { border = _border }})
 
 -- new split windows
 vim.opt.splitbelow = true
@@ -92,6 +92,14 @@ vim.opt.splitright = true
 vim.opt.nrformats = { "bin", "octal", "hex" }
 
 -- char symbols
+vim.opt.fillchars = {
+  fold = "·",
+  foldopen = "",
+  foldclose = "",
+  foldsep = "│",
+
+  -- stlnc = "×",
+}
 vim.opt.listchars = {
   eol = "¶",
   tab = "‹·›",
@@ -110,6 +118,7 @@ vim.opt.foldlevelstart = 99
 vim.opt.foldmethod = "expr"
 vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
 vim.opt.foldminlines = 5
+vim.opt.foldenable = true
 vim.opt.foldnestmax = 10
 -- if not vim.startswith(vim.g.colors_name, "kanagawa") then
 --  vim.api.nvim_set_hl(0, "Folded", { bg = "#403000", fg = "#FF40FF" })
