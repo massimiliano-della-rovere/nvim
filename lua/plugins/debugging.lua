@@ -28,6 +28,7 @@ return {
     "mfussenegger/nvim-dap",
     dependencies = {
       -- Installs the debug adapters for you
+      "nvim-neotest/nvim-nio",
       "williamboman/mason.nvim",
 
       {
