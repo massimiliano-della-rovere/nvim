@@ -1,16 +1,17 @@
 local default_language_servers = {
-  "bashls",        -- BASh
-  "cssls",         -- CSS
-  "dockerls",      -- Docker
-  "html",          -- HTML
-  "jsonls",        -- JSON
-  "lua_ls",        -- LUA
-  "pyright",       -- Python
-  "sqlls",         -- SQL
-  "taplo",         -- TOML
-  "tsserver",      -- Javascript and Typescript
-  "vimls",         -- VimScript
-  "yamlls",        -- YAML
+  "bashls",                -- BASh
+  "cssls",                 -- CSS
+  "dockerls",              -- Docker
+  "emmet_language_server", -- HTML writing in Emmet notation
+  "html",                  -- HTML
+  "jsonls",                -- JSON
+  "lua_ls",                -- LUA
+  "pyright",               -- Python
+  "sqlls",                 -- SQL
+  "taplo",                 -- TOML
+  "tsserver",              -- Javascript and Typescript
+  "vimls",                 -- VimScript
+  "yamlls",                -- YAML
 }
 
 
