@@ -13,6 +13,7 @@ return {
         "nvim-telescope/telescope-fzf-native.nvim",
         build = "cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build",
       },
+      "nvim-telescope/telescope-live-grep-args.nvim", -- options when serching files
       "nvim-web-devicons",
       "nvim-treesitter/nvim-treesitter",
       "xiyaowong/telescope-emoji.nvim", -- find specific emoji
@@ -24,18 +25,43 @@ return {
     config = function()
       local telescope = require("telescope")
 
+      local lga_actions = require("telescope-live-grep-args.actions")
       telescope.setup({
         extensions = {
+          live_grep_args = {
+            auto_quoting = true, -- enable/disable auto-quoting
+            -- define mappings, e.g.
+            mappings = { -- extend mappings
+              i = {
+                ["<C-k>"] = lga_actions.quote_prompt(),
+                ["<C-i>"] = lga_actions.quote_prompt({ postfix = " --iglob " }),
+                -- freeze the current list and start a fuzzy search in the frozen list
+                ["<C-space>"] = lga_actions.to_fuzzy_refine,
+              },
+            },
+            -- ... also accepts theme settings, for example:
+            -- theme = "dropdown", -- use dropdown theme
+            -- theme = { }, -- use own theme spec
+            -- layout_config = { mirror=true }, -- mirror preview pane
+          },
           ["ui-select"] = { require("telescope.themes").get_dropdown({}) }
         },
       })
-
-      for _, extension in pairs({ "docker", "emoji", "fzf", "glyph", "ui-select", "undo" }) do
+      for _, extension in pairs({ "docker", "emoji", "fzf", "glyph", "live_grep_args", "ui-select", "undo" }) do
         telescope.load_extension(extension)
       end
 
       local builtin = require("telescope.builtin")
       -- file pickers
+      local live_grep_args_shortcuts = require("telescope-live-grep-args.shortcuts")
+      vim.keymap.set(
+        "n", "<leader>fv",
+        live_grep_args_shortcuts.grep_visual_selection,
+        { desc = "grep with visual selection" })
+      vim.keymap.set(
+        "n", "<leader>fc",
+        live_grep_args_shortcuts.grep_word_under_cursor,
+        { desc = "grep word under cursor" })
       vim.keymap.set(
         "n", "<leader>ff",
         builtin.find_files,
@@ -46,7 +72,8 @@ return {
         { desc = "Files in CWD" })
       vim.keymap.set(
         "n", "<leader>fg",
-        builtin.live_grep,
+        telescope.extensions.live_grep_args.live_grep_args,
+        -- builtin.live_grep,
         { desc = "String in CWD" })
       vim.keymap.set(
         "n", "<leader>fG",
