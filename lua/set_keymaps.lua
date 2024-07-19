@@ -68,3 +68,21 @@ vim.keymap.set(
   "n", "Y",
   "y$",
   { desc = "Copy line from the cursor position till the end" })
+
+-- window resizing
+vim.keymap.set(
+  "n", "<C-Up>",
+  "<C-W>1-",
+  { desc = "Make window shorter" })
+vim.keymap.set(
+  "n", "<C-Down>",
+  "<C-W>1+",
+  { desc = "Make window taller" })
+vim.keymap.set(
+  "n", "<C-Left>",
+  "<C-W>1<",
+  { desc = "Make window narrower" })
+vim.keymap.set(
+  "n", "<C-Right>",
+  "<C-W>1>",
+  { desc = "Make window wider" })
