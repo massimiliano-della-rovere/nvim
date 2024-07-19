@@ -10,10 +10,12 @@ return {
       null_ls.setup({
         sources = {
           -- https://github.com/nvimtools/none-ls.nvim/blob/main/doc/BUILTINS.md
-          null_ls.builtins.code_actions.eslint_d, -- Javascript / Typescript
 
-          null_ls.builtins.diagnostics.eslint_d, -- Javascript / Typescript
-          null_ls.builtins.diagnostics.shellcheck, -- BASh
+          -- https://github.com/nvimtools/none-ls.nvim/blob/main/doc/BUILTINS.md
+          -- null_ls.builtins.code_actions.eslint_d, -- Javascript / Typescript
+
+          -- null_ls.builtins.diagnostics.eslint_d, -- Javascript / Typescript
+          -- null_ls.builtins.diagnostics.shellcheck, -- BASh
 
           null_ls.builtins.formatting.black, -- Python
           null_ls.builtins.formatting.prettier, -- Javascript / Typescript
