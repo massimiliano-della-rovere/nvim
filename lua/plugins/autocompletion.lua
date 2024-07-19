@@ -60,7 +60,7 @@ return {
               path = "[Path]",
               rg = "[Rg]",
               tags = "[Tag]",
-              tmux = "[Tmux]",
+              tmux = "[TMux]",
               -- vsnip = "[Snippet]",
             })
           })
