@@ -7,7 +7,7 @@ local function download_lazy(lazy_path)
     "clone",
     "--filter=blob:none",
     "https://github.com/folke/lazy.nvim.git",
-    "--branch=stable", -- latest stable release
+    -- "--branch=stable", -- latest stable release
     lazy_path,
   })
 end
@@ -15,7 +15,8 @@ end
 
 local function include_lazy()
   local lazy_path = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-  if not vim.loop.fs_stat(lazy_path) then
+  local stat, error = vim.loop.fs_stat(lazy_path)
+  if stat == nil or error ~= 0 then
     download_lazy(lazy_path)
   end
   vim.opt.rtp:prepend(lazy_path)
