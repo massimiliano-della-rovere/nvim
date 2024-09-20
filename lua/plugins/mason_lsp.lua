@@ -9,7 +9,7 @@ local default_language_servers = {
   "pyright",               -- Python
   "sqlls",                 -- SQL
   "taplo",                 -- TOML
-  "tsserver",              -- Javascript and Typescript
+  "ts_ls",                 -- Javascript and Typescript
   "vimls",                 -- VimScript
   "yamlls",                -- YAML
 }
