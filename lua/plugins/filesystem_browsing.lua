@@ -1,4 +1,6 @@
 return {
+  -- enhanced bdelete and bwipe
+  "Asheq/close-buffers.vim",
 
   -- file browser
   {
