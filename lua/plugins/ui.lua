@@ -54,6 +54,8 @@ return {
         { "<leader>o_", hidden = true },
         { "<leader>r", group = "rename" },
         { "<leader>r_", hidden = true },
+        { "<leader>R", group = "Remote/sshfs" },
+        { "<leader>R_", hidden = true },
         { "<leader>s", group = "spectre" },
         { "<leader>s_", hidden = true },
         { "<leader>t", group = "treesj" },

@@ -1,4 +1,26 @@
 return {
+  -- this is for nvim 0.11 -- https://github.com/3rd/image.nvim?tab=readme-ov-file#plugin-installation
+  -- {
+  --   "vhyrro/luarocks.nvim",
+  --   priority = 1001, -- this plugin needs to run before anything else
+  --   opts = {
+  --     rocks = { "magick" },
+  --   },
+  -- },
+  -- {
+  --   "3rd/image.nvim",
+  --   opts = {}
+  -- },
+  -- remote/sshfs
+  {
+    "nosduco/remote-sshfs.nvim",
+    dependencies = { "nvim-telescope/telescope.nvim" },
+    opts = {
+      -- Refer to the configuration section below
+      -- or leave empty for defaults
+    },
+  },
+
   -- enhanced bdelete and bwipe
   "Asheq/close-buffers.vim",
 
@@ -12,7 +34,7 @@ return {
       "nvim-lua/plenary.nvim",
       "nvim-tree/nvim-web-devicons",
       "MunifTanjim/nui.nvim",
-      "3rd/image.nvim",
+      -- "3rd/image.nvim",
     },
     config = function()
       vim.keymap.set(

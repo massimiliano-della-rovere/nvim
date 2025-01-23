@@ -6,6 +6,7 @@ return {
     "nvim-telescope/telescope.nvim",
     tag = "0.1.5",
     dependencies = {
+      "nosduco/remote-sshfs.nvim",
       "nvim-lua/plenary.nvim",
       "BurntSushi/ripgrep",
       "sharkdp/fd",
@@ -24,9 +25,20 @@ return {
     },
     config = function()
       local telescope = require("telescope")
+      local actions = require("telescope.actions")
 
       local lga_actions = require("telescope-live-grep-args.actions")
       telescope.setup({
+        defaults = {
+          mappings = {
+            i = {
+              ["<M-d>"] = actions.delete_buffer,
+            },
+            n = {
+              ["<M-d>"] = actions.delete_buffer,
+            },
+          },
+        },
         extensions = {
           live_grep_args = {
             auto_quoting = true, -- enable/disable auto-quoting
@@ -47,13 +59,62 @@ return {
           ["ui-select"] = { require("telescope.themes").get_dropdown({}) }
         },
       })
-      for _, extension in pairs({ "docker", "emoji", "fzf", "glyph", "live_grep_args", "ui-select", "undo" }) do
+      for _, extension in pairs({ "docker", "emoji", "fzf", "glyph", "live_grep_args", "remote-sshfs", "ui-select", "undo" }) do
         telescope.load_extension(extension)
       end
 
       local builtin = require("telescope.builtin")
-      -- file pickers
       local live_grep_args_shortcuts = require("telescope-live-grep-args.shortcuts")
+      local sshfs_connections = require("remote-sshfs.connections")
+      local sshfs_api = require("remote-sshfs.api")
+
+      vim.keymap.set(
+        "n", "<leader>Rc",
+        sshfs_api.connect,
+        { desc = "Remote/sshfs connect" })
+      vim.keymap.set(
+        "n", "<leader>Rd",
+        sshfs_api.disconnect,
+        { desc = "Remote/sshfs disconnect" })
+      vim.keymap.set(
+        "n", "<leader>Re",
+        sshfs_api.edit,
+        { desc = "Remote/sshfs edit" })
+
+      -- (optional) Override telescope find_files and live_grep to make dynamic based on if connected to host
+      vim.keymap.set(
+        "n", "<leader>ff",
+        function()
+          if sshfs_connections.is_connected() then
+            sshfs_api.find_files()
+          else
+            builtin.find_files()
+          end
+        end,
+        { desc = "Files w/o hidden in CWD" })
+      vim.keymap.set(
+        "n", "<leader>fh",
+        function()
+          if sshfs_connections.is_connected() then
+            sshfs_api.find_files({ hidden = true })
+          else
+            builtin.find_files({ hidden = true })
+          end
+        end,
+        { desc = "Files w/ hidden in CWD" })
+      vim.keymap.set(
+        "n", "<leader>fg",
+        function()
+          if sshfs_connections.is_connected() then
+            sshfs_api.live_grep()
+          else
+            -- builtin.live_grep()
+            telescope.extensions.live_grep_args.live_grep_args()
+          end
+        end,
+        { desc = "Grep in CWD" })
+
+      -- file pickers
       vim.keymap.set(
         "n", "<leader>fv",
         live_grep_args_shortcuts.grep_visual_selection,
@@ -66,19 +127,19 @@ return {
         "n", "<leader>ff",
         builtin.find_files,
         { desc = "Files in CWD" })
-      vim.keymap.set(
-        "n", "<leader>fh",
-        function() builtin.find_files({ hidden = true }) end,
-        { desc = "Files in CWD" })
-      vim.keymap.set(
-        "n", "<leader>fg",
-        telescope.extensions.live_grep_args.live_grep_args,
-        -- builtin.live_grep,
-        { desc = "String in CWD" })
-      vim.keymap.set(
-        "n", "<leader>fG",
-        builtin.git_files,
-        { desc = "String in Git files" })
+      -- vim.keymap.set(
+      --   "n", "<leader>fh",
+      --   function() builtin.find_files({ hidden = true }) end,
+      --   { desc = "Files w/ hidden in CWD" })
+      -- vim.keymap.set(
+      --   "n", "<leader>fg",
+      --   telescope.extensions.live_grep_args.live_grep_args,
+      --   -- builtin.live_grep,
+      --   { desc = "Grep in CWD" })
+      -- vim.keymap.set(
+      --   "n", "<leader>fG",
+      --   builtin.git_files,
+      --   { desc = "Grep in Git files" })
       vim.keymap.set(
         "n", "<leader>fs",
         builtin.grep_string,

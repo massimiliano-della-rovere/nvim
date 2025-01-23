@@ -28,6 +28,7 @@ require("set_leaders")
 require("lazy").setup({
   change_detection = { enabled = true },
   checker = { enabled = true, notify = false },
+  -- rocks = { hererocks = true, },  -- recommended if you do not have global installation of Lua 5.1.
   spec = {
     { "LazyVim/LazyVim", import = "plugins" },
     { import = "plugins" },
