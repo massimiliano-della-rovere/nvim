@@ -7,17 +7,22 @@ return {
     dependencies = {
       -- completion source
       "neovim/nvim-lspconfig", -- lsp configuration
+      "andersevenrud/cmp-tmux", -- tmux as source
+      "dmitmel/cmp-cmdline-history", -- 
+      "dmitmel/cmp-digraphs", -- vim digraphs
+      "FelipeLema/cmp-async-path", -- filesystem paths
       "hrsh7th/cmp-nvim-lsp", -- lsp completion
       "hrsh7th/cmp-buffer", -- buffer completion
       "hrsh7th/cmp-path", -- path/filesystem completion
       "hrsh7th/cmp-cmdline", -- command line completion
       "hrsh7th/cmp-git", -- git files and data completion
       "hrsh7th/cmp-calc", -- math expressions
-      "andersevenrud/cmp-tmux", -- tmux as source
-      "dmitmel/cmp-digraphs", -- vim digraphs
-      "saadparwaiz1/cmp_luasnip", -- snippet completion
-      "rafamadriz/friendly-snippets", -- VSCode-like snippets
+      "hrsh7th/cmp-nvim-lsp-signature-help", -- function signature help popup
+      "kdheepak/cmp-latex-symbols", -- LaTeX symbols
       "lukas-reineke/cmp-rg", -- use rg matches to feed cmp
+      "rafamadriz/friendly-snippets", -- VSCode-like snippets
+      "rcarriga/cmp-dap", -- DAP competion client
+      "saadparwaiz1/cmp_luasnip", -- snippet completion
       -- snippet completion engine
       {
         -- https://github.com/L3MON4D3/LuaSnip
@@ -42,17 +47,24 @@ return {
       cmp.setup({
         experimental = { ghost_text = true },
         preselect = cmp.PreselectMode.Item, -- None,
+        enabled = function()
+          return vim.api.nvim_buf_get_option(0, "buftype") ~= "prompt"
+            or require("cmp_dap").is_dap_buffer()
+        end,
         formatting = {
           fields = { "kind", "abbr", "menu", },
           format = lspkind.cmp_format({
             mode = "symbol_text",
             menu = ({
+              aysnc_path = "[Filesystem]",
               buffer = "[Buffer]",
               calc = "[Calc]",
+              cmdline = "[CMD]",
               digraphs = "[Digraphs]",
+              dap = "[DAP]",
               git = "[Git]",
               nvim_lsp = "[LSP]",
-              latex_symbols = "[Latex]",
+              latex_symbols = "[LaTeX]",
               luasnip = "[Snippet]",
               ["vim-dadbod-completion"] = "[DB]",
               nvim_lua = "[LUA]",
@@ -129,18 +141,29 @@ return {
             { name = "orgmode" },
             { name = "calc" },
             { name = "digraphs" },
+            { name = "dap" },
+            { name = "async_path" },
+            { name = "cmdline" },
+            { name = "nvim_lsp_signature_help" },
+            { name = "latex_symbols" },
           })
       })
 
       -- Set configuration for specific filetype.
       cmp.setup.filetype(
-        "gitcommit", {
-          sources = cmp.config.sources({
+        "gitcommit",
+        {
+          sources = cmp.config.sources(
             { name = "git" },
-          }, {
-            { name = "buffer" },
-          })
-      })
+            { name = "buffer" })
+        })
+      cmp.setup.filetype(
+        { "dap-repl", "dapui_watches", "dapui_hover" },
+        {
+          sources = {
+            { name = "dap" },
+          },
+        })
 
       -- Use buffer source for `/` and `?` (if you enabled `native_menu`, this won"t work anymore).
       cmp.setup.cmdline({ "/", "?" }, {

@@ -51,12 +51,17 @@ return {
       vim.keymap.set(
         "n",
         "[d",
-        vim.diagnostic.goto_prev,
+        function()
+          vim.diagnostic.jump({count=-1, float=true })
+        end,
         { desc = "Move to previous diagnostic in the current buffer" })
       vim.keymap.set(
         "n",
         "]d",
-        vim.diagnostic.goto_next,
+        
+        function()
+          vim.diagnostic.jump({count=1, float=true })
+        end,
         { desc = "Move to next diagnostic in the current buffer" })
       vim.keymap.set(
         "n",
@@ -191,12 +196,8 @@ return {
 
       -- LSP settings (for overriding per client)
       local handlers =  {
-        ["textDocument/hover"] = vim.lsp.with(
-          vim.lsp.handlers.hover,
-          { border = border }),
-        ["textDocument/signatureHelp"] = vim.lsp.with(
-          vim.lsp.handlers.signature_help,
-          { border = border }),
+        ["textDocument/hover"] = vim.lsp.buf.hover({ border = border }),
+        ["textDocument/signatureHelp"] = vim.lsp.buf.signature_help({ border = border }),
       }
 
       require("mason-lspconfig").setup({
@@ -294,12 +295,8 @@ return {
         underline = true,
         update_in_insert = true,
         severity_sort = false,
-        virtual_text = {
-          source = "always",  -- Or "if_many"
-        },
-        float = {
-          source = "always",  -- Or "if_many"
-        },
+        virtual_text = true,
+        float = true,
       })
       local signs = { Error = "󰅚 ", Warn = "󰀪 ", Hint = "󰌶 ", Info = " " }
       for type, icon in pairs(signs) do

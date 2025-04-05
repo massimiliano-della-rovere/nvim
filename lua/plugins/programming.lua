@@ -72,7 +72,7 @@ return {
 
       vim.keymap.set(
         "n", "<leader>nt",
-        "<CMD>TodoTroble<CR>",
+        "<CMD>TodoTrouble<CR>",
         { desc = "Notes: Open in Trouble" })
 
       vim.keymap.set(
