@@ -8,27 +8,36 @@ return {
       -- completion source
       "neovim/nvim-lspconfig", -- lsp configuration
       "andersevenrud/cmp-tmux", -- tmux as source
+      "David-Kunz/cmp-npm",
+      "davidsierradz/cmp-conventionalcommits",
       "dmitmel/cmp-cmdline-history", -- 
       "dmitmel/cmp-digraphs", -- vim digraphs
       "FelipeLema/cmp-async-path", -- filesystem paths
-      "hrsh7th/cmp-nvim-lsp", -- lsp completion
       "hrsh7th/cmp-buffer", -- buffer completion
-      "hrsh7th/cmp-path", -- path/filesystem completion
-      "hrsh7th/cmp-cmdline", -- command line completion
-      "hrsh7th/cmp-git", -- git files and data completion
       "hrsh7th/cmp-calc", -- math expressions
+      "hrsh7th/cmp-cmdline", -- command line completion
+      "hrsh7th/cmp-emoji",
+      "hrsh7th/cmp-git", -- git files and data completion
+      "hrsh7th/cmp-omni",
+      "hrsh7th/cmp-path", -- path/filesystem completion
+      "hrsh7th/cmp-nvim-lsp", -- lsp completion
+      "hrsh7th/cmp-nvim-lsp-document-symbol",
       "hrsh7th/cmp-nvim-lsp-signature-help", -- function signature help popup
       "kdheepak/cmp-latex-symbols", -- LaTeX symbols
       "lukas-reineke/cmp-rg", -- use rg matches to feed cmp
+      "petertriho/cmp-git",
       "rafamadriz/friendly-snippets", -- VSCode-like snippets
       "rcarriga/cmp-dap", -- DAP competion client
       "saadparwaiz1/cmp_luasnip", -- snippet completion
+      "SergioRibera/cmp-dotenv",
+      -- "Snikimonkd/cmp-go-pkgs",
+
       -- snippet completion engine
       {
         -- https://github.com/L3MON4D3/LuaSnip
         "L3MON4D3/LuaSnip",
         version = "v2.*", -- is this necessary?
-        build = "make install_jsrgexp", -- is this necessary?
+        -- build = "make install_jsrgexp", -- is this necessary?
       },
       "onsails/lspkind.nvim", -- icons in completion items
     },
