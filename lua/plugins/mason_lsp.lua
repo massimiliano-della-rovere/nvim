@@ -7,7 +7,6 @@ local default_language_servers = {
   "jsonls",                -- JSON
   "lua_ls",                -- LUA
   "pyright",               -- Python
-  "shellcheck",            -- BASh
   "sqlls",                 -- SQL
   "taplo",                 -- TOML
   "ts_ls",                 -- Javascript and Typescript
