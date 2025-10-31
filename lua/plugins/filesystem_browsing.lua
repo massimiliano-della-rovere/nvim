@@ -15,14 +15,50 @@ return {
   {
     "nosduco/remote-sshfs.nvim",
     dependencies = { "nvim-telescope/telescope.nvim" },
-    opts = {
+    config = function()
       -- Refer to the configuration section below
       -- or leave empty for defaults
-    },
+      local api = require('remote-sshfs.api')
+      vim.keymap.set('n', '<leader>RC', api.connect, { desc = "Remote Connect" })
+      vim.keymap.set('n', '<leader>RD', api.disconnect, { desc = "Remote Disconnect" })
+      vim.keymap.set('n', '<leader>RE', api.edit, { desc = "Remote Edit" })
+
+      -- (optional) Override telescope find_files and live_grep to make dynamic based on if connected to host
+      local builtin = require("telescope.builtin")
+      local connections = require("remote-sshfs.connections")
+      vim.keymap.set("n", "<leader>ff", function()
+        if connections.is_connected() then
+          api.find_files()
+        else
+          builtin.find_files()
+        end
+      end, {})
+      vim.keymap.set("n", "<leader>fg", function()
+        if connections.is_connected() then
+          api.live_grep()
+        else
+          builtin.live_grep()
+        end
+      end, {})
+
+      require("remote-sshfs").callback.on_connect_success:add(function(host, mount_dir)
+        vim.notify("Mounted " .. host .. " at " .. mount_dir)
+      end)
+    end
   },
 
   -- enhanced bdelete and bwipe
   "Asheq/close-buffers.vim",
+
+  -- remote ssh/docker file
+  {
+    -- https://github.com/miversen33/netman.nvim
+    "miversen33/netman.nvim",
+
+    config = function()
+      require("netman")
+    end
+  },
 
   -- file browser
   {
@@ -37,6 +73,11 @@ return {
       "3rd/image.nvim",
     },
     config = function()
+      require("neo-tree").setup({
+        update_focused_file = {
+          enable = true,
+        }
+      })
       vim.keymap.set(
         "n", "<leader>f ",
         "<CMD>Neotree filesystem reveal left<CR>",
