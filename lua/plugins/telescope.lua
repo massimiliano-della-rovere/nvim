@@ -30,6 +30,8 @@ return {
       local lga_actions = require("telescope-live-grep-args.actions")
       telescope.setup({
         defaults = {
+          layout_strategy = "horizontal",
+          layout_config = { height = 0.999, width = 0.999 },
           mappings = {
             i = {
               ["<M-d>"] = actions.delete_buffer,
