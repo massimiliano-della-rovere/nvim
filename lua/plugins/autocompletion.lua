@@ -54,7 +54,7 @@ return {
       -- end
 
       cmp.setup({
-        experimental = { ghost_text = true },
+        experimental = { ghost_text = false },
         preselect = cmp.PreselectMode.Item, -- None,
         enabled = function()
           return vim.api.nvim_buf_get_option(0, "buftype") ~= "prompt"
@@ -95,8 +95,32 @@ return {
           completeopt = "menu,menuone,noinsert,noselect",
         },
         window = {
-          completion = cmp.config.window.bordered(),
-          documentation = cmp.config.window.bordered(),
+          -- completion = cmp.config.window.bordered(),
+          -- documentation = cmp.config.window.bordered(),
+          completion = {
+            border = {
+              { "╭", "Comment" },
+              { "─", "Comment" },
+              { "╮", "Comment" },
+              { "│", "Comment" },
+              { "╯", "Comment" },
+              { "─", "Comment" },
+              { "╰", "Comment" },
+              { "│", "Comment" },
+            },
+          },
+          documentation = {
+            border = {
+              { "╭", "Comment" },
+              { "─", "Comment" },
+              { "╮", "Comment" },
+              { "│", "Comment" },
+              { "╯", "Comment" },
+              { "─", "Comment" },
+              { "╰", "Comment" },
+              { "│", "Comment" },
+            },
+          },
         },
         -- https://github.com/hrsh7th/nvim-cmp/blob/main/lua/cmp/config/mapping.lua
         mapping = cmp.mapping.preset.insert({
