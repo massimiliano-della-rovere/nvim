@@ -4,7 +4,7 @@ return {
   {
     -- https://github.com/nvim-telescope/telescope.nvim
     "nvim-telescope/telescope.nvim",
-    branch = "0.1.x",
+    -- tags = "0.x.x",
     dependencies = {
       "nosduco/remote-sshfs.nvim",
       "nvim-lua/plenary.nvim",
@@ -12,7 +12,8 @@ return {
       "sharkdp/fd",
       {
         "nvim-telescope/telescope-fzf-native.nvim",
-        build = "cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build",
+        build = "make",
+        -- build = "cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build",
       },
       "nvim-telescope/telescope-live-grep-args.nvim", -- options when serching files
       "nvim-web-devicons",
