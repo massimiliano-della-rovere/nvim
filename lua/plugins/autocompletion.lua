@@ -125,18 +125,46 @@ return {
         -- https://github.com/hrsh7th/nvim-cmp/blob/main/lua/cmp/config/mapping.lua
         mapping = cmp.mapping.preset.insert({
           ["<PgUp>"] = cmp.mapping.scroll_docs(-4),
-          -- ["<C-b>"] = cmp.mapping.scroll_docs(-4),
+          ["<C-u>"] = cmp.mapping.scroll_docs(-4),
           ["<PgDown>"] = cmp.mapping.scroll_docs(4),
-          -- ["<C-f>"] = cmp.mapping.scroll_docs(4),
+          ["<C-d>"] = cmp.mapping.scroll_docs(4),
           ["<C-Space>"] = cmp.mapping.complete({}),
           ["<CR>"] = cmp.mapping.confirm({
             behavior = cmp.ConfirmBehavior.Replace,
             select = false,
           }),
-          ["<CR>"] = cmp.mapping.confirm({ select = false }),
-          ["<C-y>"] = cmp.mapping.confirm({ select = false }),
-          ["<C-n>"] = cmp.mapping(cmp.select_next_item({ behavior = cmp.SelectBehavior.Insert })),
-          ["<C-p>"] = cmp.mapping(cmp.select_prev_item({ behavior = cmp.SelectBehavior.Insert })),
+          ["<Esc>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+              cmp.abort()
+            else
+              fallback()
+            end
+          end, { "c", "i", "s" }),
+          ["<C-e>"] = cmp.mapping.abort(),
+          ["<C-y>"] = cmp.mapping.confirm({ select = true }),
+          ["<C-n>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+              cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
+            elseif luasnip.expandable() then
+              luasnip.expand()
+            elseif luasnip.expand_or_locally_jumpable() then
+              luasnip.expand_or_jump()
+            else
+              fallback()
+              -- cmp.complete()
+            end
+          end, { "c", "i", "s" }),
+          ["<C-p>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+              cmp.select_prev_item({ behavior = cmp.SelectBehavior.Select })
+            elseif luasnip.locally_jumpable(-1) then
+              luasnip.jump(-1)
+            -- elseif check_backspace() then
+            --   fallback()
+            else
+              fallback()
+            end
+          end, { "c", "i", "s" }),
           ["<Tab>"] = cmp.mapping(function(fallback)
             if cmp.visible() then
               cmp.select_next_item({ behavior = cmp.SelectBehavior.Insert })
@@ -148,7 +176,7 @@ return {
               fallback()
               -- cmp.complete()
             end
-          end, { "i", "s" }),
+          end, { "c", "i", "s" }),
           ["<S-Tab>"] = cmp.mapping(function(fallback)
             if cmp.visible() then
               cmp.select_prev_item({ behavior = cmp.SelectBehavior.Insert })
@@ -159,13 +187,13 @@ return {
             else
               fallback()
             end
-          end, { "i", "s" }),
+          end, { "c", "i", "s" }),
           ["<C-l>"] = cmp.mapping(function(fallback)
             if cmp.visible() then
               return cmp.complete_common_string()
             end
             fallback()
-          end, { 'i', 'c' }),
+          end, { "c", "i", "s" }),
         }),
         sources = cmp.config.sources(
           {
