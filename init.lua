@@ -15,7 +15,7 @@ end
 
 local function include_lazy()
   local lazy_path = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-  local stat, error = vim.loop.fs_stat(lazy_path)
+  local stat, error = vim.uv.fs_stat(lazy_path)
   if stat == nil or error ~= 0 then
     download_lazy(lazy_path)
   end
