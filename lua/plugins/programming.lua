@@ -220,18 +220,18 @@ return {
 
   -- Neovim setup for init.lua and plugin development with full signature help, docs and completion for the nvim lua API.
   {
-    -- https://github.com/folke/neodev.nvim
-    "folke/neodev.nvim",
-    dependencies = {
-      -- Creates a beautiful debugger UI
-      -- already in debugging.lua
-      "rcarriga/nvim-dap-ui",
+    -- https://github.com/folke/lazydev.nvim
+    "folke/lazydev.nvim",
+    ft = "lua",
+    -- Creates a beautiful debugger UI
+    -- already in debugging.lua
+    dependencies = { "rcarriga/nvim-dap-ui" },
+    opts = {
+      library = {
+        { path = "nvim-dap-ui", types = true },
+        { path = "${3rd}/luv/library", words = { "vim%.uv" } },
+      }
     },
-    config = function()
-      require("neodev").setup({
-        library = { plugins = { "nvim-dap-ui" }, types = true },
-      })
-    end,
   },
 
   -- write HTML using EMMET abbreviations
@@ -300,54 +300,54 @@ return {
     end,
   },
 
-  -- :Go* commands in vim
-  {
-    -- https://github.com/olexsmir/gopher.nvim
-    "olexsmir/gopher.nvim",
-    ft = "go",
-    config = function(_, opts)
-      require("gopher").setup(opts)
-    end,
-    build = function()
-      vim.cmd([[silent! GoInstallDeps]])
-    end,
-  },
-
-  -- Go plugin
-  {
-    -- https://github.com/ray-x/go.nvim
-    "ray-x/go.nvim",
-    dependencies = {  -- optional packages
-      "ray-x/guihua.lua",
-      "neovim/nvim-lspconfig",
-      "nvim-treesitter/nvim-treesitter",
-    },
-    config = function()
-      require("go").setup()
-    end,
-    event = {"CmdlineEnter"},
-    ft = {"go", "gomod"},
-    build = ':lua require("go.install").update_all_sync()' -- if you need to install/update all binaries
-  },
-
-  -- more :Go* commands in vim
-  {
-    -- https://github.com/fatih/vim-go
-    "fatih/vim-go",
-    ft = "go",
-  },
-
-  -- Rustacean is a heavily customized fork of rust-tools
-  {
-    "mrcjkb/rustaceanvim",
-    version = "^4", -- Recommended
-    ft = "rust",
-  },
-
+  -- -- :Go* commands in vim
   -- {
-  --   "simrat39/rust-tools.nvim",
+  --   -- https://github.com/olexsmir/gopher.nvim
+  --   "olexsmir/gopher.nvim",
+  --   ft = "go",
+  --   config = function(_, opts)
+  --     require("gopher").setup(opts)
+  --   end,
+  --   build = function()
+  --     vim.cmd([[silent! GoInstallDeps]])
+  --   end,
+  -- },
+  --
+  -- -- Go plugin
+  -- {
+  --   -- https://github.com/ray-x/go.nvim
+  --   "ray-x/go.nvim",
+  --   dependencies = {  -- optional packages
+  --     "ray-x/guihua.lua",
+  --     "neovim/nvim-lspconfig",
+  --     "nvim-treesitter/nvim-treesitter",
+  --   },
+  --   config = function()
+  --     require("go").setup()
+  --   end,
+  --   event = {"CmdlineEnter"},
+  --   ft = {"go", "gomod"},
+  --   build = ':lua require("go.install").update_all_sync()' -- if you need to install/update all binaries
+  -- },
+  --
+  -- -- more :Go* commands in vim
+  -- {
+  --   -- https://github.com/fatih/vim-go
+  --   "fatih/vim-go",
+  --   ft = "go",
+  -- },
+  --
+  -- -- Rustacean is a heavily customized fork of rust-tools
+  -- {
+  --   "mrcjkb/rustaceanvim",
+  --   version = "^4", -- Recommended
   --   ft = "rust",
   -- },
+  --
+  -- -- {
+  -- --   "simrat39/rust-tools.nvim",
+  -- --   ft = "rust",
+  -- -- },
 
   {
     -- Unison

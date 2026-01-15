@@ -45,7 +45,7 @@ return {
             end
           end,
 
-          -- IMPORTANTE: Impostalo a false. 
+          -- IMPORTANTE: Impostalo a false.
           -- Se è true, rallenta tutto e può causare conflitti con la vecchia sintassi regex che vedevi prima.
           additional_vim_regex_highlighting = false,
         },

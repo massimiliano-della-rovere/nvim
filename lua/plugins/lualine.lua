@@ -9,7 +9,7 @@ return {
       local lazy_status = require("lazy.status")
 
       require("lualine").setup({
-        extensions = { 
+        extensions = {
           "aerial", "fugitive", "lazy", "mason", "mundo", "neo-tree", "nvim-dap-ui", "oil"
         },
         options = {

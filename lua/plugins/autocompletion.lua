@@ -57,7 +57,7 @@ return {
         experimental = { ghost_text = false },
         preselect = cmp.PreselectMode.Item, -- None,
         enabled = function()
-          return vim.api.nvim_buf_get_option(0, "buftype") ~= "prompt"
+          return vim.api.nvim_get_option_value( "buftype", { buf = 0 }) ~= "prompt"
             or require("cmp_dap").is_dap_buffer()
         end,
         formatting = {
@@ -74,6 +74,7 @@ return {
               git = "[Git]",
               nvim_lsp = "[LSP]",
               latex_symbols = "[LaTeX]",
+              lazydev = "[LazyDev]",
               luasnip = "[Snippet]",
               ["vim-dadbod-completion"] = "[DB]",
               nvim_lua = "[LUA]",
@@ -92,34 +93,16 @@ return {
           end,
         },
         completion = {
-          completeopt = "menu,menuone,noinsert,noselect",
+          completeopt = "menu,menuone", -- ,noinsert,noselect",
         },
         window = {
           -- completion = cmp.config.window.bordered(),
           -- documentation = cmp.config.window.bordered(),
           completion = {
-            border = {
-              { "╭", "Comment" },
-              { "─", "Comment" },
-              { "╮", "Comment" },
-              { "│", "Comment" },
-              { "╯", "Comment" },
-              { "─", "Comment" },
-              { "╰", "Comment" },
-              { "│", "Comment" },
-            },
+            border = { "╭", "─", "╮", "│", "╯", "─", "╰", "│", },
           },
           documentation = {
-            border = {
-              { "╭", "Comment" },
-              { "─", "Comment" },
-              { "╮", "Comment" },
-              { "│", "Comment" },
-              { "╯", "Comment" },
-              { "─", "Comment" },
-              { "╰", "Comment" },
-              { "│", "Comment" },
-            },
+            border = { "╭", "─", "╮", "│", "╯", "─", "╰", "│", },
           },
         },
         -- https://github.com/hrsh7th/nvim-cmp/blob/main/lua/cmp/config/mapping.lua
@@ -130,7 +113,7 @@ return {
           ["<C-d>"] = cmp.mapping.scroll_docs(4),
           ["<C-Space>"] = cmp.mapping.complete({}),
           ["<CR>"] = cmp.mapping.confirm({
-            behavior = cmp.ConfirmBehavior.Replace,
+            behavior = cmp.ConfirmBehavior.Insert,
             select = false,
           }),
           ["<Esc>"] = cmp.mapping(function(fallback)
@@ -211,6 +194,7 @@ return {
             { name = "cmdline" },
             { name = "nvim_lsp_signature_help" },
             { name = "latex_symbols" },
+            { name = "lazydev" },
           })
       })
 
