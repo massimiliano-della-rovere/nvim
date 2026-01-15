@@ -27,7 +27,7 @@ return {
       {
         -- https://github.com/j-hui/fidget.nvim
         "j-hui/fidget.nvim",
-        opts = {}, -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
+        opts = {}, -- NOTE: `opts = {}` is the same as calling `require("fidget").setup({})`
       },
 
       -- Neovim setup for init.lua and plugin development with full signature help, docs and completion for the nvim lua API.
@@ -38,11 +38,11 @@ return {
     },
     config = function()
 
-      local lspconfig = require('lspconfig')
+      local lspconfig = require("lspconfig")
 
       -- Set global defaults for all servers
       lspconfig.util.default_config = vim.tbl_extend(
-        'force',
+        "force",
         lspconfig.util.default_config,
         {
           capabilities = vim.tbl_deep_extend(
@@ -50,7 +50,7 @@ return {
             vim.lsp.protocol.make_client_capabilities(),
             -- returns configured operations if setup() was already called
             -- or default operations if not
-            require('lsp-file-operations').default_capabilities()
+            require("lsp-file-operations").default_capabilities()
           )
         }
       )
@@ -75,7 +75,7 @@ return {
       vim.keymap.set(
         "n",
         "]d",
-        
+
         function()
           vim.diagnostic.jump({count=1, float=true })
         end,
@@ -193,117 +193,62 @@ return {
   {
     -- https://github.com/williamboman/mason-lspconfig.nvim
     "williamboman/mason-lspconfig.nvim",
+    lazy = false,
     dependencies = {
-      "williamboman/mason.nvim",
+      { "williamboman/mason.nvim", opts = {} },
       "neovim/nvim-lspconfig",
     },
     config = function()
-      local lspconfig = require("lspconfig")
-      local capabilities = require("cmp_nvim_lsp").default_capabilities()
-      local border = {
-        {"🭽", "FloatBorder"},
-        {"▔", "FloatBorder"},
-        {"🭾", "FloatBorder"},
-        {"▕", "FloatBorder"},
-        {"🭿", "FloatBorder"},
-        {"▁", "FloatBorder"},
-        {"🭼", "FloatBorder"},
-        {"▏", "FloatBorder"},
-      }
-
-      -- LSP settings (for overriding per client)
-      local handlers =  {
-        ["textDocument/hover"] = vim.lsp.buf.hover({ border = border }),
-        ["textDocument/signatureHelp"] = vim.lsp.buf.signature_help({ border = border }),
-      }
+      -- local lspconfig = require("lspconfig")
+      -- local capabilities = require("cmp_nvim_lsp").default_capabilities()
+      -- local border = {
+      --   {"🭽", "FloatBorder"},
+      --   {"▔", "FloatBorder"},
+      --   {"🭾", "FloatBorder"},
+      --   {"▕", "FloatBorder"},
+      --   {"🭿", "FloatBorder"},
+      --   {"▁", "FloatBorder"},
+      --   {"🭼", "FloatBorder"},
+      --   {"▏", "FloatBorder"},
+      -- }
 
       require("mason-lspconfig").setup({
+        automatic_enable = true,
         automatic_installation = true,
         ensure_installed = default_language_servers,
-        handlers = {
-          function (server_name)
-            -- from :help mason-lspconfig.setup_handlers()
-            -- ===========================================
-            -- Register the provided {handlers}, to be called by mason when
-            -- an installed server supported by lspconfig is ready to be
-            -- set up.
-            -- 
-            --  ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
-            -- → When this function is called, all servers that are          ←
-            -- → currently installed will be considered ready to be set up.  ←
-            -- → When a new server is installed during a session, it will be ←
-            -- → considered ready to be set up when installation succeeds.   ←
-            --  ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑
-            --
-            -- {handlers} is a table where the keys are the name of an
-            -- lspconfig server, and the values are the function to be
-            -- called when that server is ready to be set up
-            -- (i.e. is installed).
-            --
-            -- You may also pass a default handler that will be called
-            -- when no dedicated handler is provided.
-            -- This is done by providing a function without a key
-            -- (see example below).
-
-            -- from autocompletion.lua:
-            -- ========================
-            -- The nvim-cmp almost supports LSP's capabilities,
-            -- so You should advertise it to LSP servers..
-            local util = require("lspconfig/util")
-
-            local path = util.path
-
-            -- local function get_python_path(workspace)
-            --   -- Use activated virtualenv.
-            --   if vim.env.VIRTUAL_ENV then
-            --     return path.join(vim.env.VIRTUAL_ENV, "bin", "python")
-            --   end
-            --
-            --   -- Find and use virtualenv from pipenv in workspace directory.
-            --   local match = vim.fn.glob(path.join(workspace, "Pipfile"))
-            --   if match ~= "" then
-            --     local venv = vim.fn.trim(vim.fn.system("PIPENV_PIPFILE=" .. match .. " pipenv --venv"))
-            --     return path.join(venv, "bin", "python")
-            --   end
-            --
-            --   -- Fallback to system Python.
-            --   return vim.fn.exepath("python3") or vim.fn.exepath("python") or "python"
-            -- end
-
-            local setup_args = {
-              capabilities = capabilities,
-              handlers = handlers,
-              on_attach = function(client, bufnr)
-                vim.api.nvim_create_autocmd("CursorHold", {
-                  buffer = bufnr,
-                  callback = function()
-                    local opts = {
-                      focusable = false,
-                      close_events = { "BufLeave", "CursorMoved", "InsertEnter", "FocusLost" },
-                      border = "rounded",
-                      source = "always",
-                      prefix = " ",
-                      scope = "cursor",
-                    }
-                    vim.diagnostic.open_float(nil, opts)
-                  end
-                })
-              end,
-            }
-            -- if server_name == "pyright" then
-            --   setup_args.root_dir = function (fname)
-            --     if string.match(fname, "/tcwa/code/tcwa2") then
-            --       return "/tcwa/code/tcwa2/code/backend"
-            --     elseif string.match(fname, "/tcwa/code") then
-            --       return "/tcwa/code"
-            --     else 
-            --       return "/"
-            --   end
-            -- end
-            lspconfig[server_name].setup(setup_args)
-          end
-        }
       })
+
+      vim.lsp.config("basedpyright", {
+        cmd = { "basedpyright-langserver", "--stdio", "--verbose" },
+        root_uri = function(bufnr)
+          local root = vim.fs.root(bufnr, { ".git", "__init__.py", "pyproject.toml", "setup.py", "pyrightconfig.json" })
+          return root and vim.uri_from_fname(root) or nil
+        end,
+        settings = {
+          basedpyright = {
+            analysis = {
+              autoImportCompletions = true,
+              autoSearchPaths = true,
+              diagnosticMode = "workspace",
+              -- extraPaths = {},
+              -- include = {},
+              inlayHints = {
+                genericTypes = true
+              },
+              logLevel = "Information",
+              typeCheckingMode = "recommended",
+            },
+          },
+        },
+      })
+
+      vim.keymap.set("n", "<leader>lk", function()
+        vim.lsp.buf.hover({ border = "rounded", focusable = false })
+      end, { desc = "LSP Hover (Rounded)" })
+
+      vim.keymap.set("i", "<C-k>", function()
+        vim.lsp.buf.signature_help({ border = "rounded", focusable = false })
+      end, { desc = "LSP Signature Help" })
 
       -- https://github.com/neovim/nvim-lspconfig/wiki/UI-Customization
       -- diagnostic beahviour and look
