@@ -5,17 +5,17 @@ return {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
     config = function()
-      local parser_config = require("nvim-treesitter.parsers")
-      parser_config.unison = {
-        install_info = {
-          -- url = "https://github.com/kallmanation/tree-sitter-unison",
-          url = "https://github.com/kylegoetz/tree-sitter-unison",
-          files = {"src/parser.c", "src/scanner.c"},
-          branch = "main",
-        },
-      }
+      -- local parser_config = require("nvim-treesitter.parsers")
+      -- parser_config.unison = {
+      --   install_info = {
+      --     -- url = "https://github.com/kallmanation/tree-sitter-unison",
+      --     url = "https://github.com/kylegoetz/tree-sitter-unison",
+      --     files = {"src/parser.c", "src/scanner.c"},
+      --     branch = "main",
+      --   },
+      -- }
 
-      require("nvim-treesitter.config").setup({
+      require("nvim-treesitter").setup({
         incremental_selection = {
           enable = true,
           keymaps = {
@@ -39,7 +39,7 @@ return {
           -- Opzionale: disabilita se il file è troppo grande
           disable = function(lang, buf)
             local max_filesize = 100 * 1024 -- 100 KB
-            local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
+            local ok, stats = pcall(vim.uv.fs_stat, vim.api.nvim_buf_get_name(buf))
             if ok and stats and stats.size > max_filesize then
               return true
             end
