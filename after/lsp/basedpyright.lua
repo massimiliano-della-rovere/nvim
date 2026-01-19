@@ -8,7 +8,7 @@ local function get_python_executable()
 end
 
 
-vim.notify("basedpyright")
+-- vim.notify("basedpyright")
 
 
 return {
