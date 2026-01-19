@@ -36,27 +36,58 @@ return {
       "folke/lazydev.nvim",
 
     },
+  },
+
+  -- LSP, DAP, Linters and Formatters manager
+  {
+    -- https://github.com/mason-org/mason.nvim
+    "mason-org/mason.nvim",
     config = function()
+      require("mason").setup({
+        ui = { border = "single" },
+      })
+    end,
+  },
 
-      local lspconfig = require("lspconfig")
+  -- Bridge for LSPs installed using Mason
+  {
+    -- https://github.com/mason-org/mason-lspconfig.nvim
+    "mason-org/mason-lspconfig.nvim",
+    lazy = false,
+    dependencies = {
+      { "mason-org/mason.nvim", opts = {} },
+      "neovim/nvim-lspconfig",
+    },
+    config = function()
+      require("mason-lspconfig").setup({
+        automatic_enable = true,
+        automatic_installation = true,
+        ensure_installed = default_language_servers,
+      })
 
-      -- Set global defaults for all servers
-      lspconfig.util.default_config = vim.tbl_extend(
-        "force",
-        lspconfig.util.default_config,
-        {
-          capabilities = vim.tbl_deep_extend(
-            "force",
-            vim.lsp.protocol.make_client_capabilities(),
-            -- returns configured operations if setup() was already called
-            -- or default operations if not
-            require("lsp-file-operations").default_capabilities()
-          )
-        }
-      )
+      vim.keymap.set("n", "<leader>lk", function()
+        vim.lsp.buf.hover({ border = "rounded", focusable = false })
+      end, { desc = "LSP Hover (Rounded)" })
 
-      -- add border to the :Lsp*-command window
-      require("lspconfig.ui.windows").default_options.border = "single"
+      vim.keymap.set("i", "<C-k>", function()
+        vim.lsp.buf.signature_help({ border = "rounded", focusable = false })
+      end, { desc = "LSP Signature Help" })
+
+      -- https://github.com/neovim/nvim-lspconfig/wiki/UI-Customization
+      -- diagnostic beahviour and look
+      vim.diagnostic.config({
+        signs = true,
+        underline = true,
+        update_in_insert = true,
+        severity_sort = false,
+        virtual_text = true,
+        float = true,
+      })
+      local signs = { Error = "󰅚 ", Warn = "󰀪 ", Hint = "󰌶 ", Info = " " }
+      for type, icon in pairs(signs) do
+        local hl = "DiagnosticSign" .. type
+        vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })
+      end
 
       -- Global mappings.
       -- See `:help vim.diagnostic.*` for documentation on any of the below functions
@@ -175,104 +206,6 @@ return {
             vim.tbl_extend("error", { desc = "Show list of Folders in workspace" }, opts))
         end,
       })
-    end,
-  },
-
-  -- LSP, DAP, Linters and Formatters manager
-  {
-    -- https://github.com/williamboman/mason.nvim
-    "williamboman/mason.nvim",
-    config = function()
-      require("mason").setup({
-        ui = { border = "single" },
-      })
-    end,
-  },
-
-  -- Bridge for LSPs installed using Mason
-  {
-    -- https://github.com/williamboman/mason-lspconfig.nvim
-    "williamboman/mason-lspconfig.nvim",
-    lazy = false,
-    dependencies = {
-      { "williamboman/mason.nvim", opts = {} },
-      "neovim/nvim-lspconfig",
-    },
-    config = function()
-      -- local lspconfig = require("lspconfig")
-      -- local capabilities = require("cmp_nvim_lsp").default_capabilities()
-      -- local border = {
-      --   {"🭽", "FloatBorder"},
-      --   {"▔", "FloatBorder"},
-      --   {"🭾", "FloatBorder"},
-      --   {"▕", "FloatBorder"},
-      --   {"🭿", "FloatBorder"},
-      --   {"▁", "FloatBorder"},
-      --   {"🭼", "FloatBorder"},
-      --   {"▏", "FloatBorder"},
-      -- }
-
-      require("mason-lspconfig").setup({
-        automatic_enable = true,
-        automatic_installation = true,
-        ensure_installed = default_language_servers,
-      })
-
-      vim.lsp.config("basedpyright", {
-        cmd = { "basedpyright-langserver", "--stdio", "--verbose" },
-        root_uri = function(bufnr)
-          local root = vim.fs.root(bufnr, { ".git", "__init__.py", "pyproject.toml", "setup.py", "pyrightconfig.json" })
-          return root and vim.uri_from_fname(root) or nil
-        end,
-        settings = {
-          basedpyright = {
-            analysis = {
-              autoImportCompletions = true,
-              autoSearchPaths = true,
-              diagnosticMode = "workspace",
-              -- extraPaths = {},
-              -- include = {},
-              inlayHints = {
-                genericTypes = true
-              },
-              logLevel = "Information",
-              typeCheckingMode = "recommended",
-            },
-          },
-        },
-      })
-
-      vim.keymap.set("n", "<leader>lk", function()
-        vim.lsp.buf.hover({ border = "rounded", focusable = false })
-      end, { desc = "LSP Hover (Rounded)" })
-
-      vim.keymap.set("i", "<C-k>", function()
-        vim.lsp.buf.signature_help({ border = "rounded", focusable = false })
-      end, { desc = "LSP Signature Help" })
-
-      -- https://github.com/neovim/nvim-lspconfig/wiki/UI-Customization
-      -- diagnostic beahviour and look
-      vim.diagnostic.config({
-        signs = true,
-        underline = true,
-        update_in_insert = true,
-        severity_sort = false,
-        virtual_text = true,
-        float = true,
-      })
-      local signs = { Error = "󰅚 ", Warn = "󰀪 ", Hint = "󰌶 ", Info = " " }
-      for type, icon in pairs(signs) do
-        local hl = "DiagnosticSign" .. type
-        vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })
-      end
-
-      -- diagnostics on hover @ cursor position
-      -- vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
-      --   group = vim.api.nvim_create_augroup("float_diagnostic_cursor", { clear = true }),
-      --   callback = function ()
-      --     vim.diagnostic.open_float(nil, {focus=false, scope="cursor"})
-      --   end
-      -- })
     end,
   },
 

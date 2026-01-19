@@ -232,6 +232,9 @@ return {
           })
       })
 
+      local capabilities = require('cmp_nvim_lsp').default_capabilities()
+      vim.lsp.config("*", { capabilities = capabilities })
+
       -- items highlighted by type
       -- gray
       vim.api.nvim_set_hl(0, "CmpItemAbbrDeprecated", { bg="NONE", strikethrough=true, fg="#808080" })

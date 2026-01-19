@@ -7,10 +7,11 @@ return {
   --     rocks = { "magick" },
   --   },
   -- },
-  -- {
-  --   "3rd/image.nvim",
-  --   opts = {}
-  -- },
+  {
+    "3rd/image.nvim",
+    opts = {}
+  },
+
   -- remote/sshfs
   {
     "nosduco/remote-sshfs.nvim",
@@ -96,25 +97,10 @@ return {
     -- "simonmclean/triptych.nvim"
     },
     config = function()
-      require("lsp-file-operations").setup()
-
-      -- this goes into mason_lsp.lua#nvim-lspconfig
-      -- local lspconfig = require('lspconfig')
-      --
-      -- -- Set global defaults for all servers
-      -- lspconfig.util.default_config = vim.tbl_extend(
-      --   'force',
-      --   lspconfig.util.default_config,
-      --   {
-      --     capabilities = vim.tbl_deep_extend(
-      --       "force",
-      --       vim.lsp.protocol.make_client_capabilities(),
-      --       -- returns configured operations if setup() was already called
-      --       -- or default operations if not
-      --       require('lsp-file-operations').default_capabilities(),
-      --     )
-      --   }
-      -- )
+      local lfo = require("lsp-file-operations")
+      lfo.setup()
+      local required_capabilities = lfo.default_capabilities()
+      vim.lsp.config("*", { capabilities = required_capabilities })
     end,
   },
 
