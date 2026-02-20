@@ -288,6 +288,38 @@ return {
     end,
   },
 
+  -- methods in super and sub classes
+  {
+    -- https://github.com/Slyces/hierarchy.nvim
+    -- "Slyces/hierarchy.nvim",
+    -- https://github.com/massimiliano-della-rovere/hierarchy.nvim
+    "massimiliano-della-rovere/hierarchy.nvim",
+    dependencies = { "nvim-treesitter/nvim-treesitter" },
+    config = function()
+      local hierarchy = require("hierarchy")
+
+
+      local lsp_request_handler_quickfix = hierarchy.handlers.quickfix
+      local lsp_request_handler_jump_to_first = hierarchy.handlers.jump_first
+      vim.keymap.set(
+        "n", "<leader>lhS",
+        function() hierarchy.supertypes(lsp_request_handler_jump_to_first) end,
+        { desc = "find Superclasses" })
+      vim.keymap.set(
+        "n", "<leader>lhB",
+        function() hierarchy.subtypes(lsp_request_handler_jump_to_first) end,
+        { desc = "find Subclasses" })
+      vim.keymap.set(
+        "n", "<leader>lhs",
+        function() hierarchy.supertypes(lsp_request_handler_quickfix) end,
+        { desc = "find Superclasses" })
+      vim.keymap.set(
+        "n", "<leader>lhb",
+        function() hierarchy.subtypes(lsp_request_handler_quickfix) end,
+        { desc = "find Subclasses" })
+    end
+  },
+
   -- -- :Go* commands in vim
   -- {
   --   -- https://github.com/olexsmir/gopher.nvim
@@ -339,6 +371,7 @@ return {
 
   {
     -- Unison
+    -- https://github.com/unisonweb/unison
     "unisonweb/unison",
     branch = "trunk",
     config = function(plugin)
