@@ -13,24 +13,44 @@ return {
     version = "*", -- Use for stability; omit to use `main` branch for the latest features
     event = "VeryLazy",
     config = function()
-      require("nvim-surround").setup({
-        keymaps = {
-          insert = "<C-g>Sa", -- add{symbol} Add a surrounding pair around the cursor (insert mode)
-          insert_line = "<C-g>SA", -- add{symbol} Add a surrounding pair around the cursor, on new lines (insert mode)
+      vim.g.nvim_surround_no_normal_mappings = true
+      require("nvim-surround").setup({})
+      vim.keymap.set("i", "<C-g>Sa", "<Plug>(nvim-surround-insert)", {
+        desc = "Add a surrounding pair around the cursor (insert mode)",
+      })
+      vim.keymap.set("i", "<C-g>SA", "<Plug>(nvim-surround-insert-line)", {
+        desc = "Add a surrounding pair around the cursor, on new lines (insert mode)",
+      })
 
-          normal = "<leader>Sa", -- add{motion}{symbol} Add a surrounding pair around a motion (normal mode)
-          normal_cur = "<leader>Sl", -- add{symbol} Add a surrounding pair around the current line (normal mode)
-          normal_line = "<leader>SA", -- add{motion}{symbol} Add a surrounding pair around a motion, on new lines (normal mode)
-          normal_cur_line = "<leader>SL", -- add{symbol} Add a surrounding pair around the current line, on new lines (normal mode)
+      vim.keymap.set("n", "<leader>Sa", "<Plug>(nvim-surround-normal)", {
+        desc = "Add a surrounding pair around a motion (normal mode)",
+      })
+      vim.keymap.set("n", "<leader>Sl", "<Plug>(nvim-surround-normal-cur)", {
+        desc = "Add a surrounding pair around the current line (normal mode)",
+      })
+      vim.keymap.set("n", "<leader>SA", "<Plug>(nvim-surround-normal-line)", {
+        desc = "Add a surrounding pair around a motion, on new lines (normal mode)",
+      })
+      vim.keymap.set("n", "<leader>SL", "<Plug>(nvim-surround-normal-cur-line)", {
+        desc = "Add a surrounding pair around the current line, on new lines (normal mode)",
+      })
 
-          visual_line = "<leader>Sl", -- add{symbol} Add a surrounding pair around a visual selection
-          visual = "<leader>SL", -- add{symbol} Add a surrounding pair around a visual selection, on new lines
+      vim.keymap.set("x", "<leader>Sl", "<Plug>(nvim-surround-visual)", {
+        desc = "Add a surrounding pair around a visual selection",
+      })
+      vim.keymap.set("x", "<leader>SL", "<Plug>(nvim-surround-visual-line)", {
+        desc = "Add a surrounding pair around a visual selection, on new lines",
+      })
 
-          delete = "<leader>Sd", -- delete{symbol} Delete a surrounding pair
+      vim.keymap.set("n", "<leader>Sd", "<Plug>(nvim-surround-delete)", {
+        desc = "Delete a surrounding pair",
+      })
 
-          change = "<leader>Sc", -- change{old_symbol}{new_symbol} Change a surrounding pair
-          change_line = "<leader>SC", -- change{old_symbol}{new_symbol} Change a surrounding pair, putting replacements on new lines
-        }
+      vim.keymap.set("n", "<leader>Sc", "<Plug>(nvim-surround-change)", {
+        desc = "Change a surrounding pair",
+      })
+      vim.keymap.set("n", "<leader>SC", "<Plug>(nvim-surround-change-line)", {
+        desc = "Change a surrounding pair, putting replacements on new lines",
       })
     end
   },
