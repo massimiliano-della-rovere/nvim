@@ -214,17 +214,28 @@ return {
 
       require("mason-lspconfig").setup({
         automatic_enable = true,
+        -- automatic_enable = {
+        --   exclude = { "basedpyright" },
+        -- },
         automatic_installation = true,
         ensure_installed = default_language_servers,
       })
 
+      local neotree_utils = require("neo-tree.utils")
+      -- local nvim_lspconfig = require("lspconfig")
+      -- local default_cfg = nvim_lspconfig.lsp.basedpyright
+      -- vim.inspect(default_cfg)
       vim.lsp.config("basedpyright", {
+        filetypes = { "python" },
         cmd = { "basedpyright-langserver", "--stdio", "--verbose" },
-        root_uri = function(bufnr)
-          local root = vim.fs.root(bufnr, { ".git", "__init__.py", "pyproject.toml", "setup.py", "pyrightconfig.json" })
-          return root and vim.uri_from_fname(root) or nil
-        end,
+        -- "__init__.py", 
+        root_markers = { ".git", "pyproject.toml", "setup.py", "pyrightconfig.json" },
         settings = {
+          python = {
+            pythonPath = neotree_utils.path_join(
+              os.getenv("VIRTUAL_ENV"), "bin", "python"
+            ),
+          },
           basedpyright = {
             analysis = {
               autoImportCompletions = true,
@@ -241,6 +252,237 @@ return {
           },
         },
       })
+
+      -- local oop_group = vim.api.nvim_create_augroup("OOP", { clear = true })
+      -- function _G.oop_debug_callback(args)
+      --   print("OOP: " .. args.event .. " -> " .. string.format(vim.inspect(args)))
+      -- end
+
+      --   pattern = "python",
+      --   callback = function(args)
+      --     vim.api.nvim_create_autocmd({ "LspProgress" }, {
+      --       group = oop_group,
+      --       -- pattern = {"begin", "report", "end"},
+      --       pattern = { "end" },
+      --       callback = _G.oop_debug_callback,
+      --     })
+      --     vim.api.nvim_create_autocmd({ "LspNotify", "LspTokenUpdate" }, {
+      --       group = oop_group,
+      --       callback = _G.oop_debug_callback,
+      --     })
+      --     vim.api.nvim_create_autocmd({ "LspRequest" }, {
+      --       group = oop_group,
+      --       -- pattern = {"begin", "report", "end"},
+      --       pattern = { "complete" },
+      --       callback = _G.oop_debug_callback,
+      --     })
+      --   end
+      -- })
+
+      -- --------------------------------------------------------------------------------
+      -- -- 1. ANALISI STATICA (Treesitter) - "Guardo in alto" (Override)
+      -- --------------------------------------------------------------------------------
+      -- function _G.check_is_override(bufnr, method_node)
+      --   local is_override = false
+      --   local parent = method_node:parent()
+      --
+      --   while parent do
+      --     if parent:type() == "class_definition" then
+      --       local superclasses = parent:child_by_field_name("superclasses")
+      --       if superclasses then 
+      --         is_override = true 
+      --       end
+      --       break
+      --     end
+      --     parent = parent:parent()
+      --   end
+      --
+      --   return is_override
+      -- end
+      --
+      -- --------------------------------------------------------------------------------
+      -- -- 2. ANALISI DINAMICA (LSP) - "Guardo in basso" (Implementation)
+      -- --------------------------------------------------------------------------------
+      -- -- CORREZIONE: Ora accetta 'node' per calcolare la posizione precisa
+      -- function _G.check_has_children(client, bufnr, method_name, node, start_row, callback)
+      --
+      --   -- Creiamo i parametri manualmente puntando al NODO, non al cursore.
+      --   -- Se usassimo make_position_params() qui, l'LSP cercherebbe info
+      --   -- sulla posizione attuale del mouse/cursore, non sul metodo del loop!
+      --   local _, start_col = node:range()
+      --   local params = {
+      --     textDocument = vim.lsp.util.make_text_document_params(bufnr),
+      --     position = { line = start_row, character = start_col }
+      --   }
+      --
+      --   client.request("textDocument/implementation", params, function(err, result)
+      --     if err then
+      --       -- M.log("Err LSP ("..method_name.."): " .. err.message, vim.log.levels.ERROR)
+      --       callback(false)
+      --       return
+      --     end
+      --
+      --     if not result or vim.tbl_isempty(result) then
+      --       callback(false)
+      --       return
+      --     end
+      --
+      --     local has_real_children = false
+      --     local current_uri = vim.uri_from_bufnr(bufnr)
+      --     local locations = vim.islist(result) and result or {result}
+      --
+      --     for _, loc in ipairs(locations) do
+      --       local is_same_file = (loc.uri == current_uri)
+      --       local is_same_line = (loc.range.start.line == start_row)
+      --
+      --       -- È un figlio se non è la definizione stessa
+      --       if not (is_same_file and is_same_line) then
+      --         has_real_children = true
+      --         -- M.log("Figlio trovato per " .. method_name)
+      --         break 
+      --       end
+      --     end
+      --
+      --     callback(has_real_children)
+      --   end, bufnr)
+      -- end
+      --
+      -- --------------------------------------------------------------------------------
+      -- -- 3. LOGICA UI
+      -- --------------------------------------------------------------------------------
+      -- function _G.place_sign(bufnr, row, is_override, has_children)
+      --   local sign_name = nil
+      --
+      --   if is_override and has_children then
+      --     sign_name = "LspMiddle"
+      --   elseif is_override then
+      --     sign_name = "LspOverride"
+      --   elseif has_children then
+      --     sign_name = "LspImplementation"
+      --   end
+      --
+      --   if sign_name then
+      --     vim.fn.sign_place(0, 'inheritance_signs', sign_name, bufnr, {
+      --       lnum = row + 1, priority = 90
+      --     })
+      --   end
+      -- end
+      --
+      -- --------------------------------------------------------------------------------
+      -- -- 4. ORCHESTRATORE PRINCIPALE
+      -- --------------------------------------------------------------------------------
+      -- function _G.refresh_signs()
+      --   local bufnr = vim.api.nvim_get_current_buf()
+      --
+      --   local clients = vim.lsp.get_clients({ bufnr = bufnr, name = "basedpyright" })
+      --   if #clients == 0 then return end
+      --   local client = clients[1]
+      --
+      --   local parser = vim.treesitter.get_parser(bufnr, "python")
+      --   if not parser then return end
+      --
+      --   local tree = parser:parse()[1]
+      --   local query = vim.treesitter.query.parse("python", [[
+      --   (function_definition name: (identifier) @method_name) @method_def
+      --   ]])
+      --
+      --   vim.fn.sign_unplace('inheritance_signs', { buffer = bufnr })
+      --
+      --   for id, node in query:iter_captures(tree:root(), bufnr, 0, -1) do
+      --     local capture_name = query.captures[id]
+      --     if capture_name == "method_name" then
+      --       local name = vim.treesitter.get_node_text(node, bufnr)
+      --       if name == "__init__" then goto continue end
+      --
+      --       local start_row, _ = node:range()
+      --
+      --       -- 1. Calcolo Override (Sincrono)
+      --       local is_override = _G.check_is_override(bufnr, node)
+      --
+      --       -- 2. Calcolo Implementation (Asincrono)
+      --       -- ORA CHIAMIAMO LA FUNZIONE CORRETTA
+      --       _G.check_has_children(client, bufnr, name, node, start_row, function(has_children)
+      --
+      --         -- 3. Piazzamento Segno (Callback)
+      --         _G.place_sign(bufnr, start_row, is_override, has_children)
+      --
+      --       end)
+      --     end
+      --     ::continue::
+      --   end
+      -- end
+      --
+      -- --------------------------------------------------------------------------------
+      -- -- 5. GESTORE CLICK
+      -- --------------------------------------------------------------------------------
+      -- function _G.handle_click(args)
+      --   if not args or not args.mousepos then return end
+      --   local line = args.mousepos.line
+      --   local bufnr = vim.api.nvim_get_current_buf()
+      --
+      --   local signs = vim.fn.sign_getplaced(bufnr, { group = 'inheritance_signs', lnum = line })
+      --   if #signs == 0 or #signs[1].signs == 0 then return end
+      --   local sign_name = signs[1].signs[1].name
+      --
+      --   local node = vim.treesitter.get_node({ bufnr = bufnr, pos = {line - 1, 0} })
+      --   while node and node:type() ~= "function_definition" do node = node:parent() end
+      --
+      --   if node then
+      --     local name_node = node:child_by_field_name("name")
+      --     if name_node then
+      --       local r, c = name_node:range()
+      --       vim.api.nvim_win_set_cursor(0, {r + 1, c})
+      --
+      --       vim.defer_fn(function()
+      --         if sign_name == "LspOverride" or sign_name == "LspMiddle" then
+      --           vim.notify("Go Up (Definition)")
+      --           vim.lsp.buf.definition()
+      --         elseif sign_name == "LspImplementation" then
+      --           vim.notify("Go Down (Implementation)")
+      --           vim.lsp.buf.implementation()
+      --         end
+      --       end, 20)
+      --     end
+      --   end
+      -- end
+
+      -- vim.api.nvim_create_autocmd("FileType", {
+      --   pattern = "python",
+      --   callback = function(args)
+      --     -- Abilita il config "basedpyright" definito sopra
+      --     vim.lsp.enable("basedpyright")
+      --
+      --     -- Colleghiamo la logica OOP quando l'LSP è attivo
+      --     -- local client = vim.lsp.get_clients({ bufnr = args.buf, name = "basedpyright" })[1]
+      --     -- local client = vim.lsp.get_clients({ bufnr = args.buf, name = "jedi_language_server" })[1]
+      --     -- if client then
+      --     --   -- vim.notify("Basedpyright Nativo 0.11 attivato")
+      --     --
+      --     --   -- Autocommand per i segni (OOP)
+      --     --   local group = vim.api.nvim_create_augroup("OOP_Signs_" .. args.buf, { clear = true })
+      --     --   vim.api.nvim_create_autocmd({"BufEnter", "BufWritePost"}, {
+      --     --     group = group,
+      --     --     buffer = args.buf,
+      --     --     callback = function(args)
+      --     --       print("OOP: " .. args.event .. " -> " .. string.format(vim.inspect(args)))
+      --     --       -- vim.defer_fn(_G.refresh_signs, 500)
+      --     --     end,
+      --     --   })
+      --     --
+      --     --   -- -- Mappatura Click (Mouse)
+      --     --   vim.keymap.set("n", "<LeftMouse>", function()
+      --     --     local mouse = vim.fn.getmousepos()
+      --     --     if mouse.screencol <= 2 then 
+      --     --       _G.handle_click({ mousepos = mouse })
+      --     --     end
+      --     --     return vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<LeftMouse>", true, false, true), "n", true)
+      --     --   end, { buffer = args.buf })
+      --     --
+      --     --   -- Refresh iniziale
+      --     --   _G.refresh_signs()
+      --     -- end
+      --   end,
+      -- })
 
       vim.keymap.set("n", "<leader>lk", function()
         vim.lsp.buf.hover({ border = "rounded", focusable = false })
