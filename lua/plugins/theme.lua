@@ -1,3 +1,4 @@
+local km = require("keymaps") -- prefissi centralizzati
 return {
 
   -- theme(s)
@@ -21,9 +22,9 @@ return {
 
       vim.cmd.colorscheme("kanagawa-wave") -- kanagawa-dragon, kanagawa-lotus
 
-      vim.keymap.set("n", "<leader>ckw", function() vim.cmd.colorscheme("kanagawa-wave") end, { desc = "Colorscheme Kanagawa Wave (d)" })
-      vim.keymap.set("n", "<leader>ckd", function() vim.cmd.colorscheme("kanagawa-dragon") end, { desc = "Colorscheme Kanagawa Dragon (d)" })
-      vim.keymap.set("n", "<leader>ckl", function() vim.cmd.colorscheme("kanagawa-lotus") end, { desc = "Colorscheme Kanagawa Lotus (l)" })
+      vim.keymap.set("n", km.colorscheme .. "kw", function() vim.cmd.colorscheme("kanagawa-wave") end, { desc = "Colorscheme Kanagawa Wave (d)" })
+      vim.keymap.set("n", km.colorscheme .. "kd", function() vim.cmd.colorscheme("kanagawa-dragon") end, { desc = "Colorscheme Kanagawa Dragon (d)" })
+      vim.keymap.set("n", km.colorscheme .. "kl", function() vim.cmd.colorscheme("kanagawa-lotus") end, { desc = "Colorscheme Kanagawa Lotus (l)" })
     end
   },
 
@@ -34,10 +35,10 @@ return {
     config = function()
       require("catppuccin").setup({})
 
-      vim.keymap.set("n", "<leader>ccl", function() vim.cmd.colorscheme("catppuccin-latte") end, { desc = "Colorscheme Catppuccin Latte (l)" })
-      vim.keymap.set("n", "<leader>ccM", function() vim.cmd.colorscheme("catppuccin-macchiato") end, { desc = "Colorscheme Catppuccin Macchiato (d)" })
-      vim.keymap.set("n", "<leader>ccm", function() vim.cmd.colorscheme("catppuccin-mocha") end, { desc = "Colorscheme Catppuccin Mocha (d)" })
-      vim.keymap.set("n", "<leader>ccf", function() vim.cmd.colorscheme("catppuccin-frappe") end, { desc = "Colorscheme Catppuccin Frappe (d)" })
+      vim.keymap.set("n", km.colorscheme .. "cl", function() vim.cmd.colorscheme("catppuccin-latte") end, { desc = "Colorscheme Catppuccin Latte (l)" })
+      vim.keymap.set("n", km.colorscheme .. "cM", function() vim.cmd.colorscheme("catppuccin-macchiato") end, { desc = "Colorscheme Catppuccin Macchiato (d)" })
+      vim.keymap.set("n", km.colorscheme .. "cm", function() vim.cmd.colorscheme("catppuccin-mocha") end, { desc = "Colorscheme Catppuccin Mocha (d)" })
+      vim.keymap.set("n", km.colorscheme .. "cf", function() vim.cmd.colorscheme("catppuccin-frappe") end, { desc = "Colorscheme Catppuccin Frappe (d)" })
     end
   },
 
@@ -51,10 +52,10 @@ return {
         dim_inactive = true,
       })
 
-      vim.keymap.set("n", "<leader>ctd", function() vim.cmd.colorscheme("tokyonight-day") end, { desc = "Colorscheme Tokyonight Day (l)" })
-      vim.keymap.set("n", "<leader>ctm", function() vim.cmd.colorscheme("tokyonight-moon") end, { desc = "Colorscheme Tokyonight Moon (d)" })
-      vim.keymap.set("n", "<leader>ctn", function() vim.cmd.colorscheme("tokyonight-night") end, { desc = "Colorscheme Tokyonight Night (d)" })
-      vim.keymap.set("n", "<leader>cts", function() vim.cmd.colorscheme("tokyonight-storm") end, { desc = "Colorscheme Tokyonight Storm (d)" })
+      vim.keymap.set("n", km.colorscheme .. "td", function() vim.cmd.colorscheme("tokyonight-day") end, { desc = "Colorscheme Tokyonight Day (l)" })
+      vim.keymap.set("n", km.colorscheme .. "tm", function() vim.cmd.colorscheme("tokyonight-moon") end, { desc = "Colorscheme Tokyonight Moon (d)" })
+      vim.keymap.set("n", km.colorscheme .. "tn", function() vim.cmd.colorscheme("tokyonight-night") end, { desc = "Colorscheme Tokyonight Night (d)" })
+      vim.keymap.set("n", km.colorscheme .. "ts", function() vim.cmd.colorscheme("tokyonight-storm") end, { desc = "Colorscheme Tokyonight Storm (d)" })
     end,
   },
 
@@ -69,14 +70,14 @@ return {
       })
 
       vim.keymap.set(
-        "n", "<leader>cgd",
+        "n", km.colorscheme .. "gd",
         function()
           vim.o.background = "dark"
           vim.cmd.colorscheme("gruvbox")
         end,
         { desc = "Colorscheme Gruvbox (d)" })
       vim.keymap.set(
-        "n", "<leader>cgl",
+        "n", km.colorscheme .. "gl",
         function()
           vim.o.background = "light"
           vim.cmd.colorscheme("gruvbox")

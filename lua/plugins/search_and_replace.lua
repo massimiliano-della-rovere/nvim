@@ -1,3 +1,4 @@
+local km = require("keymaps") -- prefissi centralizzati
 return {
   -- search and replace using popup window
   {
@@ -9,21 +10,21 @@ return {
       spectre.setup({ is_block_ui_break = true })
 
       vim.keymap.set(
-        "n", "<leader>ss",
+        "n", km.search .. "s",
         spectre.toggle,
         { desc = "Spectre: Toggle" })
       vim.keymap.set(
-        "n", "<leader>sw",
+        "n", km.search .. "w",
         function()
           spectre.open_visual({select_word=true})
         end,
         { desc = "Spectre: Search current word" })
       vim.keymap.set(
-        "v", "<leader>sw",
+        "v", km.search .. "w",
         "<esc><cmd>lua require('spectre').open_visual()<CR>",
         { desc = "Spectre: Search current word" })
       vim.keymap.set(
-        "n", "<leader>sf",
+        "n", km.search .. "f",
         function()
           spectre.open_file_search({select_word=true})
         end,
@@ -42,7 +43,7 @@ return {
     -- https://github.com/kevinhwang91/nvim-bqf
     "kevinhwang91/nvim-bqf",
     dependencies = {
-      {"nvim-treesitter/nvim-treesitter", run = ":TSUpdate"},
+      {"nvim-treesitter/nvim-treesitter", build = ":TSUpdate"},
     },
     ft = "qf",
     event = "VeryLazy",

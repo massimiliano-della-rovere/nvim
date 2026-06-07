@@ -1,3 +1,4 @@
+local km = require("keymaps")
 return {
 
   -- better status line
@@ -48,19 +49,19 @@ return {
           lualine_y = {},
           lualine_z = {}
         },
-        tabline = {
-          lualine_a = { "'b:'", { "buffers", mode = 4, use_mode_colors = true }, },
-          lualine_y = { "hostname", { "datetime", style = "%F/%a w%V %T@%z" }, },
-          lualine_z = { "'t:'", { "tabs", mode = 2, se_mode_colors = true }, },
-        },
+        -- tabline = {} disabilitato: bufferline.nvim gestisce la tabline.
+        -- hostname e datetime spostati nel winbar.
+        tabline = {},
         winbar = {
+          lualine_a = { "hostname" },
           lualine_b = { "aerial" },
+          lualine_y = { { "datetime", style = "%F w%V %T" } },
           lualine_z = { "'w:'", { "windows", mode = 2, use_mode_colors = true } },
         }
       })
 
       vim.keymap.set(
-        "n", "<leader>rt",
+        "n", km.rename .. "t",
         function()
           vim.fn.execute(":LualineRenameTab " .. vim.fn.input("Enter tab name: "))
         end,

@@ -1,19 +1,23 @@
+-- ============================================================
+-- plugins/ui.lua  –  Neovim 0.12
+-- ============================================================
+
+local km = require("keymaps")
+
 return {
 
-  -- marks in the left column
+  -- ── Marks visibili nella gutter ──────────────────────────
   {
-    -- https://github.com/chentoast/marks.nvim
     "chentoast/marks.nvim",
     config = function()
       require("marks").setup()
-    end
+    end,
   },
 
-  -- discoverable key sequences
+  -- ── Which-key: guida ai keymap ────────────────────────────
   {
-    -- https://github.com/folke/which-key.nvim
     "folke/which-key.nvim",
-    dependencies = { "echasnovski/mini.icons", },
+    dependencies = { "echasnovski/mini.icons" },
     event = "VeryLazy",
     init = function()
       vim.o.timeout = true
@@ -21,130 +25,300 @@ return {
     end,
     config = function()
       require("which-key").add({
+
+        -- ── Gruppi radice ─────────────────────────────────
         { "<leader>", group = "VISUAL <leader>" },
-        { "<leader>S", group = "surround" },
-        { "<leader>S_", hidden = true },
-        { "<leader>_", hidden = true },
-        { "<leader>b", group = "db" },
-        { "<leader>b_", hidden = true },
-        { "<leader>c", group = "colorscheme" },
-        { "<leader>c_", hidden = true },
-        { "<leader>cc", group = "colorscheme/catpuccin" },
-        { "<leader>cc_", hidden = true },
-        { "<leader>cg", group = "colorscheme/gruvbox" },
-        { "<leader>cg_", hidden = true },
-        { "<leader>ck", group = "colorscheme/kanagawa" },
-        { "<leader>ck_", hidden = true },
-        { "<leader>ct", group = "colorscheme/tokyonight" },
-        { "<leader>ct_", hidden = true },
-        { "<leader>d", group = "debug" },
-        { "<leader>d_", hidden = true },
-        { "<leader>f", group = "find" },
-        { "<leader>f_", hidden = true },
-        { "<leader>g", group = "git/telescope" },
-        { "<leader>g_", hidden = true },
-        { "<leader>h", group = "git/fugitive" },
-        { "<leader>h_", hidden = true },
-        { "<leader>k", group = "docker" },
-        { "<leader>k_", hidden = true },
-        { "<leader>l", group = "lsp/code" },
-        { "<leader>l_", hidden = true },
-        { "<leader>n", group = "notes" },
-        { "<leader>n_", hidden = true },
-        { "<leader>o", group = "oil" },
-        { "<leader>o_", hidden = true },
-        { "<leader>r", group = "rename" },
-        { "<leader>r_", hidden = true },
-        { "<leader>R", group = "Remote/sshfs" },
-        { "<leader>R_", hidden = true },
-        { "<leader>s", group = "spectre" },
-        { "<leader>s_", hidden = true },
-        { "<leader>t", group = "treesj" },
-        { "<leader>t_", hidden = true },
-        { "<leader>v", group = "view" },
-        { "<leader>v_", hidden = true },
-        { "<leader>w", group = "workspace" },
-        { "<leader>w_", hidden = true },
-        { "<leader>x", group = "trouble" },
-        { "<leader>x_", hidden = true },
+        { km.ai, group = "CodeCompanion" },
+        { km.ai .. "I", group = "inline assist" },
+        { km.db, group = "db / buffer" },
+        { km.db .. "s", group = "buffer sort" },
+        { km.copilot, group = "CopilotChat" },
+        { km.colorscheme, group = "colorscheme" },
+        { km.colorscheme .. "c", group = "catppuccin" },
+        { km.colorscheme .. "g", group = "gruvbox" },
+        { km.colorscheme .. "k", group = "kanagawa" },
+        { km.colorscheme .. "t", group = "tokyonight" },
+        { km.debug, group = "debug / DAP" },
+        { km.find, group = "find" },
+        { km.flash, group = "flash" },
+        { km.git, group = "git" },
+        { km.fugitive, group = "fugitive" },
+        { km.harpoon, group = "harpoon" },
+        { km.docker, group = "docker" },
+        { km.lsp, group = "LSP / code" },
+        { km.lsp_hier, group = "OOP hierarchy" },
+        { km.notes, group = "notes / TODO" },
+        { km.oil, group = "oil" },
+        { km.rename, group = "rename" },
+        { km.remote, group = "remote SSH" },
+        { km.surround, group = "surround" },
+        { km.search, group = "search / replace" },
+        { km.treesj, group = "treesj" },
+        { km.test, group = "testing" },
+        { km.view, group = "view" },
+        { km.workspace, group = "workspace" },
+        { km.trouble, group = "trouble" },
 
+        -- ── Call hierarchy (telescope-hierarchy) ───────────
+        { km.view .. "i", desc = "View: incoming calls (tree)" },
+        { km.view .. "o", desc = "View: outgoing calls (tree)" },
 
+        -- ── Testing: neotest ─────────────────────────────
+        { km.test .. "t", desc = "Test: run nearest" },
+        { km.test .. "T", desc = "Test: run file" },
+        { km.test .. "a", desc = "Test: run all" },
+        { km.test .. "l", desc = "Test: run last" },
+        { km.test .. "s", desc = "Test: summary panel" },
+        { km.test .. "o", desc = "Test: output" },
+        { km.test .. "O", desc = "Test: output panel" },
+        { km.test .. "d", desc = "Test: debug nearest" },
+        { km.test .. "w", desc = "Test: watch file" },
+        { km.test .. "x", desc = "Test: stop" },
 
-        -- ["<leader>"] = { name = "VISUAL <leader>", _ = "which_key_ignore" },
-        -- ["<leader>b"] = { name = "+db", _ = "which_key_ignore"  },
-        -- ["<leader>c"] = { name = "+colorscheme", _ = "which_key_ignore" },
-        -- ["<leader>cc"] = { name = "+colorscheme/catpuccin", _ = "which_key_ignore" },
-        -- ["<leader>cg"] = { name = "+colorscheme/gruvbox", _ = "which_key_ignore" },
-        -- ["<leader>ck"] = { name = "+colorscheme/kanagawa", _ = "which_key_ignore" },
-        -- ["<leader>ct"] = { name = "+colorscheme/tokyonight", _ = "which_key_ignore" },
-        -- ["<leader>d"] = { name = "+debug", _ = "which_key_ignore" },
-        -- ["<leader>f"] = { name = "+find", _ = "which_key_ignore" },
-        -- ["<leader>g"] = { name = "+git/telescope", _ = "which_key_ignore" },
-        -- ["<leader>h"] = { name = "+git/fugitive", _ = "which_key_ignore" },
-        -- ["<leader>k"] = { name = "+docker", _ = "which_key_ignore" },
-        -- ["<leader>l"] = { name = "+lsp/code", _ = "which_key_ignore" },
-        -- ["<leader>o"] = { name = "+oil", _ = "which_key_ignore" },
-        -- ["<leader>n"] = { name = "+notes", _ = "which_key_ignore" },
-        -- ["<leader>r"] = { name = "+rename", _ = "which_key_ignore" },
-        -- ["<leader>s"] = { name = "+spectre", _ = "which_key_ignore" },
-        -- ["<leader>S"] = { name = "+surround", _ = "which_key_ignore" },
-        -- ["<leader>t"] = { name = "+treesj", _ = "which_key_ignore" },
-        -- ["<leader>v"] = { name = "+view", _ = "which_key_ignore" },
-        -- ["<leader>w"] = { name = "+workspace", _ = "which_key_ignore" },
-        -- ["<leader>x"] = { name = "+trouble", _ = "which_key_ignore" },
+        -- ── Harpoon ──────────────────────────────────────
+        { km.harpoon .. "a", desc = "Harpoon: add file" },
+        { km.harpoon .. "h", desc = "Harpoon: menu" },
+        { km.harpoon .. "f", desc = "Harpoon: telescope picker" },
+        { km.harpoon .. "[", desc = "Harpoon: prev file" },
+        { km.harpoon .. "]", desc = "Harpoon: next file" },
+        { "<M-1>", desc = "Harpoon: file 1" },
+        { "<M-2>", desc = "Harpoon: file 2" },
+        { "<M-3>", desc = "Harpoon: file 3" },
+        { "<M-4>", desc = "Harpoon: file 4" },
+
+        -- ── CodeCompanion (Claude) ─────────────────────
+        { km.ai .. "c", desc = "Claude: chat toggle" },
+        { km.ai .. "I", desc = "Claude: inline assist" },
+        { km.ai .. "A", desc = "Claude: action palette" },
+        { km.ai .. "B", desc = "Claude: add buffer to chat" },
+        { km.ai .. "Ia", desc = "Claude: accept inline change" },
+        { km.ai .. "Ir", desc = "Claude: reject inline change" },
+
+        -- ── CopilotChat ────────────────────────────────
+        { km.copilot .. "a", desc = "CopilotChat: open" },
+        { km.copilot .. "s", desc = "CopilotChat: selection", mode = { "n", "v" } },
+        { km.copilot .. "q", desc = "CopilotChat: quick ask" },
+        { km.copilot .. "p", desc = "CopilotChat: prompt actions" },
+        { km.copilot .. "x", desc = "CopilotChat: close" },
+        { km.copilot .. "r", desc = "CopilotChat: reset" },
+
+        -- ── Buffer (bufferline) ────────────────────────
+        { km.db .. "p", desc = "Buffer: pick (jump)" },
+        { km.db .. "c", desc = "Buffer: pick and close" },
+        { km.db .. "P", desc = "Buffer: toggle pin" },
+        { km.db .. "sd", desc = "Buffer: sort by directory" },
+        { km.db .. "se", desc = "Buffer: sort by extension" },
+        { km.db .. "st", desc = "Buffer: sort by tabs" },
+
+        -- ── Note e markdown ────────────────────────────
+        { km.notes .. "A", desc = "TODOage: toggle" },
+        { km.notes .. "m", desc = "Markdown: toggle render" },
+
+        -- ── LSP extra ─────────────────────────────────
+        { km.lsp .. "F", desc = "Format: conform (async)" },
+        { km.lsp .. "f", desc = "Format: toggle format-on-save" },
+        { km.lsp .. "l", desc = "Lint: run on buffer" },
+        { km.lsp .. "p", desc = "LSP: peek function def" },
+        { km.lsp .. "P", desc = "LSP: peek class def" },
+        { km.lsp_hier .. "s", desc = "OOP: list supertypes" },
+        { km.lsp_hier .. "b", desc = "OOP: list subtypes" },
+        { km.lsp_hier .. "S", desc = "OOP: jump supertype" },
+        { km.lsp_hier .. "B", desc = "OOP: jump subtype" },
+
+        -- ── Keymaps non-leader (nuove funzionalita) ───
+        -- Flash
+        { "s", desc = "Flash: jump", mode = { "n", "x", "o" } },
+        { "S", desc = "Flash: treesitter select", mode = { "n", "x", "o" } },
+        { "r", desc = "Flash: remote (operator)", mode = { "o" } },
+        { "R", desc = "Flash: treesitter search", mode = { "o", "x" } },
+        -- Treesitter context
+        { "[C", desc = "TSContext: jump to context" },
+        -- OOP signs navigation
+        { "gO", desc = "OOP: navigate to related class" },
+        -- Treesitter textobjects swap
+        { "<M-,>", desc = "TS: swap prev parameter", mode = { "n" } },
+        { "<M-.>", desc = "TS: swap next parameter", mode = { "n" } },
+        -- Fast wrap (autopairs)
+        { "<M-e>", desc = "Autopairs: fast wrap", mode = { "i" } },
+
+        { "<leader>__", hidden = true },
       })
     end,
   },
 
-  -- Window resize
+  -- ── Ridimensione finestre animata ─────────────────────────
   {
-    -- https://github.com/anuvyklack/windows.nvim
     "anuvyklack/windows.nvim",
-    dependencies = {
-      "anuvyklack/middleclass",
-      "anuvyklack/animation.nvim"
-    },
+    dependencies = { "anuvyklack/middleclass", "anuvyklack/animation.nvim" },
     config = function()
       vim.opt.winwidth = 10
       vim.opt.winminwidth = 10
       vim.opt.equalalways = false
-
       require("windows").setup()
-
-      vim.keymap.set("n", "<C-w>z", ":WindowsMaximize<CR>")
-      vim.keymap.set("n", "<C-w>_", ":WindowsMaximizeVertically<CR>")
-      vim.keymap.set("n", "<C-w>|", ":WindowsMaximizeHorizontally<CR>")
-      vim.keymap.set("n", "<C-w>=", ":WindowsEqualize<CR>")
-    end
+      vim.keymap.set("n", "<C-w>z", ":WindowsMaximize<CR>", { desc = "Window: maximize" })
+      vim.keymap.set("n", "<C-w>_", ":WindowsMaximizeVertically<CR>", { desc = "Window: max vertical" })
+      vim.keymap.set("n", "<C-w>|", ":WindowsMaximizeHorizontally<CR>", { desc = "Window: max horizontal" })
+      vim.keymap.set("n", "<C-w>=", ":WindowsEqualize<CR>", { desc = "Window: equalize" })
+    end,
   },
 
-  -- replaces the UI for messages, cmdline and the popupmenu_show
+  -- ── Noice: UI per messaggi, cmdline e popupmenu ───────────
   {
-    -- https://github.com/folke/noice.nvim
     "folke/noice.nvim",
     config = function()
       require("noice").setup({
         lsp = {
-          -- override markdown rendering so that **cmp** and other plugins use **Treesitter**
           override = {
             ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
             ["vim.lsp.util.stylize_markdown"] = true,
             ["cmp.entry.get_documentation"] = true,
           },
         },
-        -- you can enable a preset for easier configuration
         presets = {
-          bottom_search = true, -- use a classic bottom cmdline for search
-          command_palette = true, -- position the cmdline and popupmenu together
-          long_message_to_split = true, -- long messages will be sent to a split
-          inc_rename = false, -- enables an input dialog for inc-rename.nvim
-          lsp_doc_border = false, -- add a border to hover docs and signature help
+          bottom_search = true,
+          command_palette = true,
+          long_message_to_split = true,
+          inc_rename = false,
+          lsp_doc_border = false,
+        },
+      })
+      require("telescope").load_extension("noice")
+    end,
+  },
+
+  -- ============================================================
+  -- akinsho/bufferline.nvim  --  buffer/tab bar
+  -- ============================================================
+  -- Sostituisce la visualizzazione buffer nella tabline di lualine
+  -- (disabilitata in lualine.lua) con una barra dedicata che mostra:
+  --   • buffer aperti con icona e numero
+  --   • indicatori LSP (errori/warning per buffer)
+  --   • stato git (modified)
+  --   • tab groups separati dai buffer
+  --
+  -- KEYMAPS  (<leader>b):
+  --   <leader>bp   buffer pick (salta con 1 lettera)
+  --   <leader>bc   chiudi buffer corrente
+  --   <leader>bP   fissa/de-fissa buffer (pin)
+  --   <leader>bsd  ordina per directory
+  --   <leader>bse  ordina per estensione
+  --   <leader>bst  ordina per ultima modifica
+  -- ============================================================
+  {
+    "akinsho/bufferline.nvim",
+    version = "*",
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    config = function()
+      local bufferline = require("bufferline")
+
+      bufferline.setup({
+        options = {
+          mode = "buffers",
+          style_preset = bufferline.style_preset.default,
+          themable = true,
+          numbers = "ordinal", -- mostra il numero per <M-N>
+
+          -- Chiudi buffer con bdelete (close-buffers.vim già installato)
+          close_command = "bdelete! %d",
+          right_mouse_command = "bdelete! %d",
+          left_mouse_command = "buffer %d",
+
+          indicator = { icon = "\xe2\x96\x8e", style = "icon" }, -- ▎
+          buffer_close_icon = "\xe2\x9c\x95", -- ✕
+          modified_icon = "\xe2\x97\x8f", -- ●
+          close_icon = "\xef\x80\x91", --
+          left_trunc_marker = "\xef\x81\x84", --
+          right_trunc_marker = "\xef\x81\x85", --
+
+          max_name_length = 30,
+          max_prefix_length = 15,
+          truncate_names = true,
+          tab_size = 18,
+
+          -- Diagnostics LSP inline per buffer
+          diagnostics = "nvim_lsp",
+          diagnostics_update_in_insert = false,
+          diagnostics_indicator = function(count, level)
+            local icons = {
+              error = "\xef\x82\x9a ", --
+              warning = "\xef\x80\xb1 ", --
+            }
+            return (icons[level] or "") .. count
+          end,
+
+          -- Integrazione con gitsigns per mostrare stato git
+          custom_filter = function(buf_number)
+            -- Nasconde i buffer di servizio dalla barra
+            local ft = vim.bo[buf_number].filetype
+            local excluded = {
+              "qf",
+              "help",
+              "nofile",
+              "aerial",
+              "neo-tree",
+              "alpha",
+              "lazy",
+              "mason",
+              "dap-repl",
+              "dapui_console",
+              "dapui_watches",
+              "dapui_stacks",
+              "dapui_breakpoints",
+              "dapui_scopes",
+            }
+            for _, t in ipairs(excluded) do
+              if ft == t then
+                return false
+              end
+            end
+            return true
+          end,
+
+          -- Mostra anche i tab nel bufferline (separati)
+          show_buffer_close_icons = true,
+          show_close_icon = false,
+          show_tab_indicators = true,
+          show_duplicate_prefix = true,
+
+          separator_style = "thin",
+          enforce_regular_tabs = false,
+          always_show_bufferline = false, -- nasconde se un solo buffer
+          hover = {
+            enabled = true,
+            delay = 150,
+            reveal = { "close" },
+          },
+
+          -- Offset per neo-tree e aerial
+          offsets = {
+            {
+              filetype = "neo-tree",
+              text = "File Explorer",
+              highlight = "Directory",
+              separator = true,
+            },
+            {
+              filetype = "aerial",
+              text = "Outline",
+              highlight = "Directory",
+              separator = true,
+            },
+          },
         },
       })
 
-      require("telescope").load_extension("noice")
-    end
+      -- Keymaps
+      vim.keymap.set("n", km.db .. "p", "<CMD>BufferLinePick<CR>", { desc = "Buffer: pick (jump)" })
+      vim.keymap.set("n", km.db .. "c", "<CMD>BufferLinePickClose<CR>", { desc = "Buffer: pick and close" })
+      vim.keymap.set("n", km.db .. "P", "<CMD>BufferLineTogglePin<CR>", { desc = "Buffer: toggle pin" })
+      vim.keymap.set("n", km.db .. "sd", "<CMD>BufferLineSortByDirectory<CR>", { desc = "Buffer: sort by directory" })
+      vim.keymap.set("n", km.db .. "se", "<CMD>BufferLineSortByExtension<CR>", { desc = "Buffer: sort by extension" })
+      vim.keymap.set("n", km.db .. "st", "<CMD>BufferLineSortByTabs<CR>", { desc = "Buffer: sort by tabs" })
+
+      -- I tasti <M-h>/<M-l> già in set_keymaps.lua navigano tra buffer;
+      -- usiamo anche <S-h>/<S-l> come alternativa standard di bufferline
+      vim.keymap.set("n", "<S-h>", "<CMD>BufferLineCyclePrev<CR>", { desc = "Buffer: prev" })
+      vim.keymap.set("n", "<S-l>", "<CMD>BufferLineCycleNext<CR>", { desc = "Buffer: next" })
+    end,
   },
-
-
 }

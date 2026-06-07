@@ -1,19 +1,18 @@
+-- ============================================================
+-- plugins/programming.lua  --  Neovim 0.12 / 0.13-compatible
+-- ============================================================
+
+local km = require("keymaps") -- prefissi centralizzati
 return {
 
-  -- Detect tabstop and shiftwidth automatically
-  -- https://github.com/tpope/vim-sleuth
+  -- ── Rilevamento automatico tab/shiftwidth ─────────────────
   "tpope/vim-sleuth",
 
-  -- "gc"/"gb" to comment visual regions/lines
-  {
-    -- https://github.com/numToStr/Comment.nvim
-    "numToStr/Comment.nvim",
-    opts = {},
-  },
+  -- ── Commenti gc/gb ────────────────────────────────────────
+  { "numToStr/Comment.nvim", opts = {} },
 
-  -- highlight word under the cursor
+  -- ── Evidenzia parola sotto cursore ────────────────────────
   {
-    -- https://github.com/RRethy/vim-illuminate
     "RRethy/vim-illuminate",
     config = function()
       vim.api.nvim_set_hl(0, "IlluminatedWordText", { altfont = true, standout = true })
@@ -23,104 +22,131 @@ return {
     end,
   },
 
-  -- highlight specific words, such as "TODO", "FIX", "NOTE", "WARNING", etc
+  -- ── TODO / FIX / NOTE highlights ──────────────────────────
   {
-    -- https://github.com/folke/todo-comments.nvim
     "folke/todo-comments.nvim",
     dependencies = { "nvim-lua/plenary.nvim" },
     config = function()
       local todo = require("todo-comments")
       todo.setup()
-
-      vim.keymap.set(
-        "n", "]t",
-        function()
-          todo.jump_next()
-        end,
-        { desc = "Next todo comment" })
-
-      vim.keymap.set(
-        "n", "[t",
-        function()
-          todo.jump_prev()
-        end,
-        { desc = "Previous todo comment" })
-
-      vim.keymap.set(
-        "n", "]T",
-        function()
-          todo.jump_next({keywords = { "ERROR", "WARNING" }})
-        end,
-        { desc = "Next error/warning todo comment" })
-
-      vim.keymap.set(
-        "n", "[T",
-        function()
-          todo.jump_prev({keywords = { "ERROR", "WARNING" }})
-        end,
-        { desc = "Previous error/warning todo comment" })
-
-      vim.keymap.set(
-        "n", "<leader>nl",
-        "<CMD>TodoLocList<CR>",
-        { desc = "Notes: Open in Location list" })
-
-      vim.keymap.set(
-        "n", "<leader>nq",
-        "<CMD>TodoQuickFix<CR>",
-        { desc = "Notes: Open in Quickfix list" })
-
-      vim.keymap.set(
-        "n", "<leader>nt",
-        "<CMD>TodoTrouble<CR>",
-        { desc = "Notes: Open in Trouble" })
-
-      vim.keymap.set(
-        "n", "<leader>nv",
-        "<CMD>TodoTelscope<CR>",
-        { desc = "Notes: Open in Telescope" })
+      vim.keymap.set("n", "]t", function()
+        todo.jump_next()
+      end, { desc = "TODO: next" })
+      vim.keymap.set("n", "[t", function()
+        todo.jump_prev()
+      end, { desc = "TODO: prev" })
+      vim.keymap.set("n", "]T", function()
+        todo.jump_next({ keywords = { "ERROR", "WARNING" } })
+      end, { desc = "TODO: next error/warn" })
+      vim.keymap.set("n", "[T", function()
+        todo.jump_prev({ keywords = { "ERROR", "WARNING" } })
+      end, { desc = "TODO: prev error/warn" })
+      vim.keymap.set("n", km.notes .. "l", "<CMD>TodoLocList<CR>", { desc = "Notes: loclist" })
+      vim.keymap.set("n", km.notes .. "q", "<CMD>TodoQuickFix<CR>", { desc = "Notes: quickfix" })
+      vim.keymap.set("n", km.notes .. "t", "<CMD>TodoTrouble<CR>", { desc = "Notes: trouble" })
+      vim.keymap.set("n", km.notes .. "v", "<CMD>TodoTelescope<CR>", { desc = "Notes: telescope" })
     end,
   },
 
-  -- highlight match symbol area
-  -- must be after colorscheme
+  -- ── TODO age: età dei commenti via git blame ──────────────
+  -- ============================================================
+  -- harukikuri/todoage.nvim
+  -- ============================================================
+  -- Mostra come virtual text inline l'età in giorni di ogni
+  -- commento TODO/FIXME/HACK, ricavata da "git blame".
+  -- Coesiste con todo-comments.nvim: todoage aggiunge SOLO
+  -- l'annotazione dell'età (es. "42d"), senza toccare colori,
+  -- quickfix o ricerca.
+  --
+  -- Requisiti: Neovim 0.10+ (vim.system), git in PATH,
+  --            parser Treesitter per il linguaggio del buffer.
+  --
+  -- COMANDI:
+  --   :Todoage          aggiorna il buffer corrente
+  --   :TodoageEnable    riabilita e ri-annota
+  --   :TodoageDisable   rimuove le annotazioni e sospende
+  --   :TodoageToggle    abilita / disabilita
+  --
+  -- KEYMAP:
+  --   <leader>nA        toggle on/off
+  -- ============================================================
   {
-    -- https://github.com/rareitems/hl_match_area.nvim
+    "harukikuri/todoage.nvim",
+    event = { "BufReadPost", "BufWritePost" },
+    config = function()
+      require("todoage").setup({
+        -- Lista parole chiave allineata a todo-comments.nvim.
+        -- NOTA: setup() sostituisce la lista intera, non la fonde.
+        keywords = {
+          "TODO",
+          "FIXME",
+          "HACK",
+          "BUG",
+          "NOTE",
+          "WARN",
+          "WARNING",
+          "PERF",
+          "OPTIM",
+          "PERFORMANCE",
+          "OPTIMIZE",
+        },
+
+        -- Formato: riceve l'età in giorni, deve restituire una stringa.
+        -- Qui usiamo una scala leggibile: giorni → settimane → mesi → anni.
+        format = function(age_days)
+          if age_days < 7 then
+            return string.format(" (%dd)", age_days)
+          elseif age_days < 30 then
+            return string.format(" (%dw)", math.floor(age_days / 7))
+          elseif age_days < 365 then
+            return string.format(" (%dm)", math.floor(age_days / 30))
+          else
+            return string.format(" (%dy)", math.floor(age_days / 365))
+          end
+        end,
+      })
+
+      -- Highlight: fuori da setup() perché il README lo indica
+      -- esplicitamente, e agganciati a ColorScheme per sopravvivere
+      -- ai cambi di tema a runtime.
+      local function set_hl()
+        -- Giallo-ambra per le annotazioni committate
+        vim.api.nvim_set_hl(0, "TodoageAge", { fg = "#d7af5f", italic = true })
+        -- Grigio scuro per i TODO non ancora committati
+        vim.api.nvim_set_hl(0, "TodoageUncommitted", { fg = "#5f5f5f", italic = true })
+      end
+      set_hl()
+      vim.api.nvim_create_autocmd("ColorScheme", {
+        group = vim.api.nvim_create_augroup("TodoageHL", { clear = true }),
+        callback = set_hl,
+      })
+
+      vim.keymap.set("n", km.notes .. "A", "<CMD>TodoageToggle<CR>", { desc = "TODOage: toggle" })
+    end,
+  },
+
+  -- ── Evidenzia area attorno alle parentesi corrispondenti ──
+  {
     "rareitems/hl_match_area.nvim",
     config = function()
-      require("hl_match_area").setup({
-        highlight_in_insert_mode = true, -- should highlighting also be done in insert mode
-        delay = 100, -- delay before the highglight
-      })
+      require("hl_match_area").setup({ highlight_in_insert_mode = true, delay = 100 })
       if not vim.startswith(vim.g.colors_name or "default", "kanagawa") then
         vim.api.nvim_set_hl(0, "MatchArea", { bg = "#4A2400" })
       else
-        vim.api.nvim_set_hl(0, 'MatchArea', { bg = "#303030" })
+        vim.api.nvim_set_hl(0, "MatchArea", { bg = "#303030" })
       end
-    end
+    end,
   },
 
-  -- rainbow matching delimiter symbols
+  -- ── Parentesi arcobaleno ──────────────────────────────────
   {
-    -- http://github.com/HiPhish/rainbow-delimiters.nvim
     "HiPhish/rainbow-delimiters.nvim",
     config = function()
-      -- This module contains a number of default definitions
-      local rainbow_delimiters = require("rainbow-delimiters")
-
+      local rd = require("rainbow-delimiters")
       vim.g.rainbow_delimiters = {
-        strategy = {
-          [""] = rainbow_delimiters.strategy["global"],
-          vim = rainbow_delimiters.strategy["local"],
-        },
-        query = {
-          [""] = "rainbow-delimiters",
-          lua = "rainbow-blocks",
-        },
-        priority = {
-          [""] = 110,
-          lua = 210,
-        },
+        strategy = { [""] = rd.strategy["global"], vim = rd.strategy["local"] },
+        query = { [""] = "rainbow-delimiters", lua = "rainbow-blocks" },
+        priority = { [""] = 110, lua = 210 },
         highlight = {
           "RainbowDelimiterRed",
           "RainbowDelimiterYellow",
@@ -131,125 +157,121 @@ return {
           "RainbowDelimiterCyan",
         },
       }
-    end
+    end,
   },
 
-  -- highlight vertical indent lines
+  -- ── Guide di indentazione arcobaleno ─────────────────────
   {
-    -- Add indentation guides even on blank lines
-    -- https://github.com/lukas-reineke/indent-blankline.nvim
     "lukas-reineke/indent-blankline.nvim",
     config = function()
-      local highlight = {
-        "RainbowRed",
-        "RainbowYellow",
-        "RainbowBlue",
-        "RainbowOrange",
-        "RainbowGreen",
-        "RainbowViolet",
-        "RainbowCyan",
+      local colors = {
+        { "RainbowRed", "#E06C75" },
+        { "RainbowYellow", "#E5C07B" },
+        { "RainbowBlue", "#61AFEF" },
+        { "RainbowOrange", "#D19A66" },
+        { "RainbowGreen", "#98C379" },
+        { "RainbowViolet", "#C678DD" },
+        { "RainbowCyan", "#56B6C2" },
       }
+      local hl_names = vim.tbl_map(function(c)
+        return c[1]
+      end, colors)
       local hooks = require("ibl.hooks")
-      -- create the highlight groups in the highlight setup hook, so they are reset
-      -- every time the colorscheme changes
-      hooks.register(
-        hooks.type.HIGHLIGHT_SETUP,
-        function()
-          vim.api.nvim_set_hl(0, "RainbowRed", { fg = "#E06C75" })
-          vim.api.nvim_set_hl(0, "RainbowYellow", { fg = "#E5C07B" })
-          vim.api.nvim_set_hl(0, "RainbowBlue", { fg = "#61AFEF" })
-          vim.api.nvim_set_hl(0, "RainbowOrange", { fg = "#D19A66" })
-          vim.api.nvim_set_hl(0, "RainbowGreen", { fg = "#98C379" })
-          vim.api.nvim_set_hl(0, "RainbowViolet", { fg = "#C678DD" })
-          vim.api.nvim_set_hl(0, "RainbowCyan", { fg = "#56B6C2" })
+      hooks.register(hooks.type.HIGHLIGHT_SETUP, function()
+        for _, c in ipairs(colors) do
+          vim.api.nvim_set_hl(0, c[1], { fg = c[2] })
         end
-      )
-      vim.g.rainbow_delimiters = { highlight = highlight }
-      require("ibl").setup({
-        scope = { highlight = highlight, },
-      })
-      hooks.register(
-        hooks.type.SCOPE_HIGHLIGHT,
-        hooks.builtin.scope_highlight_from_extmark)
-    end
+      end)
+      vim.g.rainbow_delimiters = { highlight = hl_names }
+      require("ibl").setup({ scope = { highlight = hl_names } })
+      hooks.register(hooks.type.SCOPE_HIGHLIGHT, hooks.builtin.scope_highlight_from_extmark)
+    end,
   },
 
-  -- code outline
+  -- ── Outline del codice (Aerial) ───────────────────────────
   {
-    -- https://github.com/stevearc/aerial.nvim
     "stevearc/aerial.nvim",
-    -- Optional dependencies
-    dependencies = {
-      "nvim-treesitter/nvim-treesitter",
-      "nvim-tree/nvim-web-devicons"
-    },
+    dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-tree/nvim-web-devicons" },
     config = function()
+      local aerial_inherited = require("aerial_inherited")
+
       require("aerial").setup({
         default_direction = "prefer_right",
         open_automatic = false,
         show_guides = true,
-
         filter_kind = false,
-
         autojump = true,
         highlight_on_hover = true,
         manager_folds = true,
+
+        -- on_attach: chiamato quando aerial si attacca a un buffer.
+        -- Notifica aerial_inherited del source bufnr PRIMA che l'aerial
+        -- buffer venga creato, cosi' la correlazione FileType aerial
+        -- puo' avvenire correttamente.
+        on_attach = function(bufnr)
+          aerial_inherited.on_attach(bufnr)
+        end,
       })
 
-      vim.keymap.set(
-        "n", "<leader>ld",
-        "<CMD>AerialToggle<CR>",
-        { desc = "Aerial: Document Symbols" })
+      -- Attiva il modulo che mostra i metodi ereditati nell'aerial buffer
+      aerial_inherited.setup()
 
-      for _, key_combination in ipairs({"ls", "vs"}) do
-        vim.keymap.set(
-          "n", "<leader>" .. key_combination,
-          function()
-            require("telescope").load_extension("aerial")
-            require("telescope").extensions.aerial.aerial()
-          end,
-          { desc = "Aerial: Document Symbols" })
-      end
-
-      vim.keymap.set(
-        "n", "<leader>ln",
-        "<CMD>AerialNavToggle<CR>",
-        { desc = "Aerial: Toggle Nav" })
+      vim.keymap.set("n", km.lsp .. "d", "<CMD>AerialToggle<CR>", { desc = "Aerial: toggle" })
+      vim.keymap.set("n", km.lsp .. "n", "<CMD>AerialNavToggle<CR>", { desc = "Aerial: nav" })
+      -- <leader>ls → aerial symbols (corrente buffer)
+      -- <leader>vs è riservato a telescope builtin.symbols (telescope.lua)
+      vim.keymap.set("n", km.lsp .. "s", function()
+        require("telescope").load_extension("aerial")
+        require("telescope").extensions.aerial.aerial()
+      end, { desc = "Aerial: document symbols" })
     end,
   },
 
-  -- Neovim setup for init.lua and plugin development with full signature help, docs and completion for the nvim lua API.
+  -- ── lazydev: API Neovim nel completamento Lua ─────────────
+  -- ============================================================
+  -- folke/lazydev.nvim  --  tipi Neovim per lua_ls
+  -- ============================================================
+  -- Inietta automaticamente il runtime di Neovim in lua_ls quando
+  -- si apre un file Lua della config (init.lua, lua/**/*.lua).
+  -- Sostituisce il vecchio approccio workspace.library manuale che
+  -- caricava TUTTO il runtime e rallentava lo startup di lua_ls.
+  --
+  -- Risultato: vim.api.*, vim.fn.*, vim.lsp.* ecc. non vengono
+  -- piu' sottolineati; completamento e hover funzionano su tutto
+  -- il namespace vim.* senza warning "undefined field".
+  -- ============================================================
   {
-    -- https://github.com/folke/lazydev.nvim
     "folke/lazydev.nvim",
     ft = "lua",
-    -- Creates a beautiful debugger UI
-    -- already in debugging.lua
-    dependencies = { "rcarriga/nvim-dap-ui" },
+    lazy = false,
+    priority = 1000, -- carica prima di lua_ls
+    dependencies = {
+      -- Tipi completi per vim.uv (libuv / luv)
+      { "Bilal2453/luvit-meta", lazy = true },
+      -- Tipi per nvim-dap-ui (usati nella config dap)
+      { "rcarriga/nvim-dap-ui" },
+    },
     opts = {
       library = {
-        { path = "nvim-dap-ui", types = true },
+        -- vim.uv: carica i tipi solo quando il cursore e' su vim.uv
+        { path = "luvit-meta/library", words = { "vim%.uv" } },
         { path = "${3rd}/luv/library", words = { "vim%.uv" } },
-      }
+        -- nvim-dap-ui: tipi per dapui nelle config dap
+        { path = "nvim-dap-ui", types = true },
+      },
     },
   },
 
-  -- write HTML using EMMET abbreviations
+  -- ── Emmet abbreviations ───────────────────────────────────
   {
-    -- https://github.com/olrtg/nvim-emmet
     "olrtg/nvim-emmet",
     config = function()
-      vim.keymap.set(
-        { "n", "v" },
-        "<leader>e",
-        require("nvim-emmet").wrap_with_abbreviation,
-        { desc = "Expand with Emmet" })
+      vim.keymap.set({ "n", "v" }, km.emmet, require("nvim-emmet").wrap_with_abbreviation, { desc = "Emmet: wrap" })
     end,
-},
+  },
 
-  -- language injections
+  -- ── Language injections (treesitter) ─────────────────────
   {
-    -- https://github.com/Dronakurl/injectme.nvim
     "Dronakurl/injectme.nvim",
     dependencies = {
       "nvim-treesitter/nvim-treesitter",
@@ -257,121 +279,11 @@ return {
       "nvim-telescope/telescope.nvim",
     },
     lazy = true,
-    -- This is for lazy load and more performance on startup only
-    cmd = { "InjectmeToggle", "InjectmeSave", "InjectmeInfo" , "InjectmeLeave"},
-    -- opts = { mode = "all"  },
+    cmd = { "InjectmeToggle", "InjectmeSave", "InjectmeInfo", "InjectmeLeave" },
   },
 
-  -- sign column extension
+  -- ── Unison language support ───────────────────────────────
   {
-    -- https://github.com/luukvbaal/statuscol.nvim
-    "luukvbaal/statuscol.nvim",
-    dependencies = {
-      "mfussenegger/nvim-dap",
-      "lewis6991/gitsigns.nvim",
-    },
-    config = function()
-      local statuscol = require("statuscol")
-      local builtin = require("statuscol.builtin")
-      statuscol.setup({
-        relculright = true,
-        segments = {
-          { text = { "%C" }, click = "v:lua.ScFa" },
-          {
-            text = { builtin.lnumfunc, " " },
-            condition = { true, builtin.not_empty },
-            click = "v:lua.ScLa",
-          },
-          { text = { "%s" }, click = "v:lua.ScSa" },
-        },
-      })
-    end,
-  },
-
-  -- methods in super and sub classes
-  {
-    -- https://github.com/Slyces/hierarchy.nvim
-    -- "Slyces/hierarchy.nvim",
-    -- https://github.com/massimiliano-della-rovere/hierarchy.nvim
-    "massimiliano-della-rovere/hierarchy.nvim",
-    dependencies = { "nvim-treesitter/nvim-treesitter" },
-    config = function()
-      local hierarchy = require("hierarchy")
-
-
-      local lsp_request_handler_quickfix = hierarchy.handlers.quickfix
-      local lsp_request_handler_jump_to_first = hierarchy.handlers.jump_first
-      vim.keymap.set(
-        "n", "<leader>lhS",
-        function() hierarchy.supertypes(lsp_request_handler_jump_to_first) end,
-        { desc = "find Superclasses" })
-      vim.keymap.set(
-        "n", "<leader>lhB",
-        function() hierarchy.subtypes(lsp_request_handler_jump_to_first) end,
-        { desc = "find Subclasses" })
-      vim.keymap.set(
-        "n", "<leader>lhs",
-        function() hierarchy.supertypes(lsp_request_handler_quickfix) end,
-        { desc = "find Superclasses" })
-      vim.keymap.set(
-        "n", "<leader>lhb",
-        function() hierarchy.subtypes(lsp_request_handler_quickfix) end,
-        { desc = "find Subclasses" })
-    end
-  },
-
-  -- -- :Go* commands in vim
-  -- {
-  --   -- https://github.com/olexsmir/gopher.nvim
-  --   "olexsmir/gopher.nvim",
-  --   ft = "go",
-  --   config = function(_, opts)
-  --     require("gopher").setup(opts)
-  --   end,
-  --   build = function()
-  --     vim.cmd([[silent! GoInstallDeps]])
-  --   end,
-  -- },
-  --
-  -- -- Go plugin
-  -- {
-  --   -- https://github.com/ray-x/go.nvim
-  --   "ray-x/go.nvim",
-  --   dependencies = {  -- optional packages
-  --     "ray-x/guihua.lua",
-  --     "neovim/nvim-lspconfig",
-  --     "nvim-treesitter/nvim-treesitter",
-  --   },
-  --   config = function()
-  --     require("go").setup()
-  --   end,
-  --   event = {"CmdlineEnter"},
-  --   ft = {"go", "gomod"},
-  --   build = ':lua require("go.install").update_all_sync()' -- if you need to install/update all binaries
-  -- },
-  --
-  -- -- more :Go* commands in vim
-  -- {
-  --   -- https://github.com/fatih/vim-go
-  --   "fatih/vim-go",
-  --   ft = "go",
-  -- },
-  --
-  -- -- Rustacean is a heavily customized fork of rust-tools
-  -- {
-  --   "mrcjkb/rustaceanvim",
-  --   version = "^4", -- Recommended
-  --   ft = "rust",
-  -- },
-  --
-  -- -- {
-  -- --   "simrat39/rust-tools.nvim",
-  -- --   ft = "rust",
-  -- -- },
-
-  {
-    -- Unison
-    -- https://github.com/unisonweb/unison
     "unisonweb/unison",
     branch = "trunk",
     config = function(plugin)
@@ -383,4 +295,192 @@ return {
     end,
   },
 
+  -- ══════════════════════════════════════════════════════════
+  -- STATUSCOLUMN: numero assoluto + relativo affiancati
+  -- ══════════════════════════════════════════════════════════
+  -- Layout (sx -> dx):  [ fold ][ absN  relN ][ signs ]
+  --
+  -- I segni OOP (↑ ↓ ↕) vengono inseriti da oop_signs.lua
+  -- tramite nvim_buf_set_extmark (extmarks API, non sign_define).
+  -- Non servono piu' vim.fn.sign_define() per i segni OOP:
+  -- gli extmarks con sign_text/sign_hl_group si rendono
+  -- automaticamente nel segmento %s di statuscol.
+  -- ══════════════════════════════════════════════════════════
+  {
+    "luukvbaal/statuscol.nvim",
+    dependencies = {
+      "mfussenegger/nvim-dap",
+      "lewis6991/gitsigns.nvim",
+    },
+    config = function()
+      local statuscol = require("statuscol")
+      local builtin = require("statuscol.builtin")
+
+      statuscol.setup({
+        relculright = true,
+        segments = {
+          -- fold marker
+          { text = { "%C" }, click = "v:lua.ScFa" },
+
+          -- numero assoluto (sempre visibile su ogni riga)
+          {
+            text = {
+              function(args)
+                return string.format("%4d", args.lnum)
+              end,
+              " ",
+            },
+            click = "v:lua.ScLa",
+          },
+
+          -- numero relativo (distanza dalla riga corrente)
+          {
+            text = {
+              function(args)
+                local rel = math.abs(vim.api.nvim_win_get_cursor(0)[1] - args.lnum)
+                if rel == 0 then
+                  return string.format("%-4d", args.lnum)
+                end
+                return string.format("%-4d", rel)
+              end,
+              " ",
+            },
+            condition = { true, builtin.not_empty },
+            click = "v:lua.ScLa",
+          },
+
+          -- Colonna segni: git, dap breakpoint, OOP extmarks, diagnostics.
+          -- OopSignClick: se la riga ha un segno OOP (↑ ↓ ↕) naviga
+          -- alla/e definizione/i; altrimenti comportamento standard.
+          { text = { "%s" }, click = "v:lua.OopSignClick" },
+        },
+      })
+
+      -- Ricalcola i numeri relativi ad ogni movimento cursore
+      vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
+        group = vim.api.nvim_create_augroup("StatuscolRefresh", { clear = true }),
+        callback = function()
+          vim.wo.statuscolumn = vim.wo.statuscolumn
+        end,
+      })
+    end,
+  },
+
+  -- ── Gerarchia OOP: navigazione supertypes/subtypes ────────
+  {
+    "massimiliano-della-rovere/hierarchy.nvim",
+    dependencies = { "nvim-treesitter/nvim-treesitter" },
+    config = function()
+      local hierarchy = require("hierarchy")
+      local qf = hierarchy.handlers.quickfix
+      local jump = hierarchy.handlers.jump_first
+
+      vim.keymap.set("n", km.lsp_hier .. "S", function()
+        hierarchy.supertypes(jump)
+      end, { desc = "OOP: jump supertype" })
+      vim.keymap.set("n", km.lsp_hier .. "B", function()
+        hierarchy.subtypes(jump)
+      end, { desc = "OOP: jump subtype" })
+      vim.keymap.set("n", km.lsp_hier .. "s", function()
+        hierarchy.supertypes(qf)
+      end, { desc = "OOP: list supertypes" })
+      vim.keymap.set("n", km.lsp_hier .. "b", function()
+        hierarchy.subtypes(qf)
+      end, { desc = "OOP: list subtypes" })
+    end,
+  },
+
+  -- ============================================================
+  -- MeanderingProgrammer/render-markdown.nvim
+  -- ============================================================
+  -- Renderizza i file Markdown direttamente nel buffer Neovim:
+  -- intestazioni stilizzate, tabelle allineate, checkbox
+  -- interattive, blocchi di codice con bordo e highlight.
+  -- Attivo solo in normal mode (non in insert per non disturbare
+  -- la scrittura). Richiede il parser Treesitter per markdown.
+  --
+  -- <leader>nm   toggle render on/off nel buffer corrente
+  -- ============================================================
+  {
+    "MeanderingProgrammer/render-markdown.nvim",
+    ft = { "markdown", "rmd", "org", "norg" },
+    dependencies = {
+      "nvim-treesitter/nvim-treesitter",
+      "nvim-tree/nvim-web-devicons",
+    },
+    config = function()
+      require("render-markdown").setup({
+        enabled = true,
+        -- Renderizza solo in normal/command mode, non in insert
+        render_modes = { "n", "c", "t" },
+        max_file_size = 10.0, -- MB
+
+        heading = {
+          enabled = true,
+          sign = true,
+          position = "overlay",
+          icons = {
+            "\xe2\x96\x88 ", -- █ H1
+            "\xe2\x96\x93 ", -- ▓ H2
+            "\xe2\x96\x92 ", -- ▒ H3
+            "\xe2\x96\x91 ", -- ░ H4
+            "\xe2\x97 ", -- ◆ H5
+            "\xe2\x97 ", -- ◇ H6
+          },
+          width = "full",
+          left_pad = 0,
+          right_pad = 0,
+        },
+
+        code = {
+          enabled = true,
+          sign = false,
+          style = "full", -- blocco con bordi
+          position = "left",
+          border = "thin",
+          language_pad = 1,
+          width = "full",
+          min_width = 40,
+        },
+
+        bullet = {
+          enabled = true,
+          icons = { "\xe2\x80\xa2", "\xe2\x97¦", "\xe2\x80\xa3", "\xe2\x80\xa2" },
+          --          •                    ◦                   ‣                   •
+        },
+
+        checkbox = {
+          enabled = true,
+          position = "overlay",
+          unchecked = { icon = "\xe2\x98\x90 " }, -- ☐
+          checked = { icon = "\xe2\x9c\x94 " }, -- ✔
+        },
+
+        table = {
+          enabled = true,
+          style = "full",
+          cell = "padded",
+        },
+
+        link = {
+          enabled = true,
+          hyperlink = "\xf0\x9f\x94\x97", -- 🔗
+          image = "\xf0\x9f\x96\xbc \xef\xb8\x8f", -- 🖼 ️
+        },
+
+        sign = {
+          enabled = false, -- disabilitato: troppo rumore con altri segni
+        },
+
+        win_options = {
+          conceallevel = {
+            default = vim.api.nvim_get_option_value("conceallevel", { scope = "local" }),
+            rendered = 2,
+          },
+        },
+      })
+
+      vim.keymap.set("n", km.notes .. "m", "<CMD>RenderMarkdown toggle<CR>", { desc = "Markdown: toggle render" })
+    end,
+  },
 }

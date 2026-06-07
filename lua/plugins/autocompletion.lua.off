@@ -1,0 +1,900 @@
+-- ============================================================
+-- plugins/autocompletion.lua  --  Neovim 0.12
+-- Versione PRINCIPALE: zbirenbaum/copilot.lua con NES (Next Edit Suggestions)
+-- github/copilot.vim commentato ma conservato sotto per riferimento.
+-- ============================================================
+-- Copilot funziona in parallelo a nvim-cmp come ghost text
+-- indipendente. I due sistemi non interferiscono:
+--   nvim-cmp  →  menu a tendina con LSP / snippet / buffer / …
+--   Copilot   →  ghost text inline, tasti dedicati (C-J ecc.)
+--
+-- Per la versione con Copilot integrato nel menu cmp, usare:
+--   lua/plugins/autocompletion_copilot_cmp.lua
+-- (rinominare in autocompletion.lua e riavviare)
+-- ============================================================
+
+local km = require("keymaps") -- prefissi centralizzati
+return {
+
+  -- ============================================================
+  -- nvim-cmp: motore di autocompletamento
+  -- ============================================================
+  -- Aggrega sorgenti eterogenee (LSP, snippet, buffer, path, …)
+  -- in un unico menu unificato con icone (lspkind) e mappings
+  -- configurabili per insert mode e riga di comando.
+  -- ============================================================
+  {
+    "hrsh7th/nvim-cmp",
+    dependencies = {
+      "neovim/nvim-lspconfig",
+      "andersevenrud/cmp-tmux",
+      "David-Kunz/cmp-npm",
+      "davidsierradz/cmp-conventionalcommits",
+      "dmitmel/cmp-cmdline-history",
+      "dmitmel/cmp-digraphs",
+      "FelipeLema/cmp-async-path",   -- async, non blocca mai su dir grandi
+      "hrsh7th/cmp-buffer",
+      "hrsh7th/cmp-calc",
+      "hrsh7th/cmp-cmdline",
+      "hrsh7th/cmp-emoji",
+      "hrsh7th/cmp-omni",
+      -- hrsh7th/cmp-path RIMOSSO: sincrono, blocca su directory grandi
+      "hrsh7th/cmp-nvim-lsp",
+      "hrsh7th/cmp-nvim-lsp-document-symbol",
+      "hrsh7th/cmp-nvim-lsp-signature-help",
+      "kdheepak/cmp-latex-symbols",
+      "lukas-reineke/cmp-rg",
+      "petertriho/cmp-git",
+      "rafamadriz/friendly-snippets",
+      "rcarriga/cmp-dap",
+      "saadparwaiz1/cmp_luasnip",
+      "SergioRibera/cmp-dotenv",
+      {
+        "L3MON4D3/LuaSnip",
+        version = "v2.*",
+      },
+      "onsails/lspkind.nvim",
+    },
+    config = function()
+      local cmp     = require("cmp")
+      local lspkind = require("lspkind")
+      local luasnip = require("luasnip")
+      require("luasnip.loaders.from_vscode").lazy_load()
+      luasnip.config.setup({})
+
+      cmp.setup({
+        experimental = { ghost_text = false },
+        preselect    = cmp.PreselectMode.Item,
+        enabled = function()
+          return vim.api.nvim_get_option_value("buftype", { buf = 0 }) ~= "prompt"
+            or require("cmp_dap").is_dap_buffer()
+        end,
+
+        -- ── Formato voci del menu ─────────────────────────────
+        formatting = {
+          fields = { "kind", "abbr", "menu" },
+          format = lspkind.cmp_format({
+            mode = "symbol_text",
+            menu = {
+              async_path   = "[Filesystem]",
+              buffer       = "[Buffer]",
+              calc         = "[Calc]",
+              cmdline      = "[CMD]",
+              -- digraphs = "[Digraphs]",
+              dap          = "[DAP]",
+              git          = "[Git]",
+              nvim_lsp     = "[LSP]",
+              latex_symbols = "[LaTeX]",
+              lazydev      = "[LazyDev]",
+              luasnip      = "[Snippet]",
+              ["vim-dadbod-completion"] = "[DB]",
+              nvim_lua     = "[LUA]",
+              orgmode      = "[Org]",
+              rg           = "[Rg]",
+              tags         = "[Tag]",
+              tmux         = "[TMux]",
+            },
+          }),
+        },
+
+        snippet = {
+          expand = function(args)
+            require("luasnip").lsp_expand(args.body)
+          end,
+        },
+        completion = { completeopt = "menu,menuone" },
+        window = {
+          completion    = { border = { "\xe2\x95\xad", "\xe2\x94\x80", "\xe2\x95\xae", "\xe2\x94\x82", "\xe2\x95\xaf", "\xe2\x94\x80", "\xe2\x95\xb0", "\xe2\x94\x82" } },
+          documentation = { border = { "\xe2\x95\xad", "\xe2\x94\x80", "\xe2\x95\xae", "\xe2\x94\x82", "\xe2\x95\xaf", "\xe2\x94\x80", "\xe2\x95\xb0", "\xe2\x94\x82" } },
+        },
+
+        -- ── Mapping insert mode ───────────────────────────────
+        -- <Tab> / <C-y>  conferma SENZA rimpiazzare (Insert)
+        -- <CR>           conferma RIMPIAZZANDO (Replace),
+        --                  solo se item selezionato esplicitamente
+        -- <C-n> / <C-p>  scorri lista + naviga snippet
+        -- <C-e>          chiudi menu
+        -- <C-l>          completa prefisso comune
+        -- <C-Space>      apri menu forzatamente
+        mapping = cmp.mapping.preset.insert({
+          ["<PgUp>"]    = cmp.mapping.scroll_docs(-4),
+          ["<C-u>"]     = cmp.mapping.scroll_docs(-4),
+          ["<PgDown>"]  = cmp.mapping.scroll_docs(4),
+          ["<C-d>"]     = cmp.mapping.scroll_docs(4),
+          ["<C-Space>"] = cmp.mapping.complete({}),
+          ["<CR>"] = cmp.mapping.confirm({
+            behavior = cmp.ConfirmBehavior.Replace,
+            select   = false,
+          }),
+          ["<Esc>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then cmp.abort() else fallback() end
+          end, { "i", "s" }),
+          ["<C-e>"] = cmp.mapping.abort(),
+          ["<C-y>"] = cmp.mapping.confirm({
+            behavior = cmp.ConfirmBehavior.Insert,
+            select   = true,
+          }),
+          ["<C-n>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+              cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
+            elseif luasnip.expandable() then
+              luasnip.expand()
+            elseif luasnip.expand_or_locally_jumpable() then
+              luasnip.expand_or_jump()
+            else
+              fallback()
+            end
+          end, { "i", "s" }),
+          ["<C-p>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+              cmp.select_prev_item({ behavior = cmp.SelectBehavior.Select })
+            elseif luasnip.locally_jumpable(-1) then
+              luasnip.jump(-1)
+            else
+              fallback()
+            end
+          end, { "i", "s" }),
+          ["<Tab>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+              cmp.confirm({ behavior = cmp.ConfirmBehavior.Insert, select = true })
+            elseif luasnip.expandable() then
+              luasnip.expand()
+            elseif luasnip.expand_or_locally_jumpable() then
+              luasnip.expand_or_jump()
+            else
+              fallback()
+            end
+          end, { "i", "s" }),
+          ["<S-Tab>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+              cmp.select_prev_item({ behavior = cmp.SelectBehavior.Insert })
+            elseif luasnip.locally_jumpable(-1) then
+              luasnip.jump(-1)
+            else
+              fallback()
+            end
+          end, { "i", "s" }),
+          ["<C-l>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then return cmp.complete_common_string() end
+            fallback()
+          end, { "i", "s" }),
+        }),
+
+        -- ── Sorgenti ─────────────────────────────────────────
+        -- Nota: hrsh7th/cmp-path rimosso (sincrono, blocca).
+        -- async_path usa coroutine uv e non blocca mai.
+        sources = cmp.config.sources({
+          { name = "nvim_lsp" },
+          { name = "luasnip" },
+          { name = "buffer" },
+          { name = "tags",       keyword_length = 2 },
+          { name = "rg",         keyword_length = 3 },
+          { name = "async_path" },
+          { name = "orgmode" },
+          { name = "calc" },
+          -- { name = "digraphs" },  -- disabilitato: interferisce con i tasti di navigazione
+          { name = "dap" },
+          { name = "cmdline" },
+          { name = "nvim_lsp_signature_help" },
+          { name = "latex_symbols" },
+          { name = "lazydev" },
+        }),
+      })
+
+      -- ── Filetype specifici ────────────────────────────────
+      cmp.setup.filetype("gitcommit", {
+        sources = cmp.config.sources(
+          { { name = "git" } },
+          { { name = "buffer" } }),
+      })
+      cmp.setup.filetype({ "dap-repl", "dapui_watches", "dapui_hover" }, {
+        sources = { { name = "dap" } },
+      })
+
+      -- ── Completamento in / e ? ────────────────────────────
+      -- Stessi tasti dell'insert mode, senza logica LuaSnip.
+      cmp.setup.cmdline({ "/", "?" }, {
+        mapping = cmp.mapping.preset.cmdline({
+          ["<Tab>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+              cmp.confirm({ behavior = cmp.ConfirmBehavior.Insert, select = true })
+            else fallback() end
+          end, { "c" }),
+          ["<C-y>"] = cmp.mapping.confirm({ behavior = cmp.ConfirmBehavior.Insert, select = true }),
+          ["<CR>"]  = cmp.mapping.confirm({ behavior = cmp.ConfirmBehavior.Replace, select = false }),
+          ["<C-n>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
+            else fallback() end
+          end, { "c" }),
+          ["<C-p>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then cmp.select_prev_item({ behavior = cmp.SelectBehavior.Select })
+            else fallback() end
+          end, { "c" }),
+          ["<Down>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
+            else fallback() end
+          end, { "c" }),
+          ["<Up>"]   = cmp.mapping(function(fallback)
+            if cmp.visible() then cmp.select_prev_item({ behavior = cmp.SelectBehavior.Select })
+            else fallback() end
+          end, { "c" }),
+          ["<C-e>"] = cmp.mapping.abort(),
+          ["<C-l>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then return cmp.complete_common_string() end
+            fallback()
+          end, { "c" }),
+        }),
+        sources = { { name = "buffer" } },
+      })
+
+      -- ── Completamento in : (riga di comando) ─────────────
+      -- async_path evita il blocco su directory grandi.
+      -- <CR> esegue il comando se nessun item e' selezionato.
+      cmp.setup.cmdline(":", {
+        mapping = cmp.mapping.preset.cmdline({
+          ["<Tab>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+              cmp.confirm({ behavior = cmp.ConfirmBehavior.Insert, select = true })
+            else fallback() end
+          end, { "c" }),
+          ["<C-y>"] = cmp.mapping.confirm({ behavior = cmp.ConfirmBehavior.Insert, select = true }),
+          ["<CR>"]  = cmp.mapping.confirm({ behavior = cmp.ConfirmBehavior.Replace, select = false }),
+          ["<C-n>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
+            else fallback() end
+          end, { "c" }),
+          ["<C-p>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then cmp.select_prev_item({ behavior = cmp.SelectBehavior.Select })
+            else fallback() end
+          end, { "c" }),
+          ["<Down>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
+            else fallback() end
+          end, { "c" }),
+          ["<Up>"]   = cmp.mapping(function(fallback)
+            if cmp.visible() then cmp.select_prev_item({ behavior = cmp.SelectBehavior.Select })
+            else fallback() end
+          end, { "c" }),
+          ["<C-e>"] = cmp.mapping.abort(),
+          ["<C-l>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then return cmp.complete_common_string() end
+            fallback()
+          end, { "c" }),
+        }),
+        sources = cmp.config.sources(
+          { { name = "async_path", max_item_count = 20 } },
+          { { name = "cmdline" } }),
+      })
+
+      -- ── Highlights per tipo ───────────────────────────────
+      vim.api.nvim_set_hl(0, "CmpItemAbbrDeprecated",  { bg="NONE", strikethrough=true, fg="#808080" })
+      vim.api.nvim_set_hl(0, "CmpItemAbbrMatch",        { bg="NONE", fg="#569CD6" })
+      vim.api.nvim_set_hl(0, "CmpItemAbbrMatchFuzzy",   { link="CmpItemAbbrMatch" })
+      vim.api.nvim_set_hl(0, "CmpItemKindVariable",     { bg="NONE", fg="#9CDCFE" })
+      vim.api.nvim_set_hl(0, "CmpItemKindInterface",    { link="CmpItemKindVariable" })
+      vim.api.nvim_set_hl(0, "CmpItemKindText",         { link="CmpItemKindVariable" })
+      vim.api.nvim_set_hl(0, "CmpItemKindFunction",     { bg="NONE", fg="#C586C0" })
+      vim.api.nvim_set_hl(0, "CmpItemKindMethod",       { link="CmpItemKindFunction" })
+      vim.api.nvim_set_hl(0, "CmpItemKindKeyword",      { bg="NONE", fg="#D4D4D4" })
+      vim.api.nvim_set_hl(0, "CmpItemKindProperty",     { link="CmpItemKindKeyword" })
+      vim.api.nvim_set_hl(0, "CmpItemKindUnit",         { link="CmpItemKindKeyword" })
+    end,
+  },
+
+  --   -- ============================================================
+  --   -- GitHub Copilot (plugin ufficiale: github/copilot.vim)
+  --   -- ============================================================
+  --   -- Funziona in parallelo a nvim-cmp: mostra suggerimenti inline
+  --   -- (ghost text) indipendenti dal menu cmp. I due sistemi non
+  --   -- interferiscono perche' copilot_no_tab_map = true impedisce a
+  --   -- Copilot di catturare <Tab>, che rimane gestito da cmp.
+  --   --
+  --   -- PRIMA AUTENTICAZIONE (una sola volta per macchina):
+  --   --   :Copilot setup      oppure   :Copilot auth
+  --   --
+  --   -- TASTI (insert mode):
+  --   --   <C-J>        accetta l'intero suggerimento
+  --   --   <M-Right>    accetta la prossima parola
+  --   --   <M-C-Right>  accetta la prossima riga
+  --   --   <C-]>        scarta il suggerimento
+  --   --   <M-]>        suggerimento successivo
+  --   --   <M-[>        suggerimento precedente
+  --   --   <M-\>        richiedi esplicitamente un suggerimento
+  --   --
+  --   -- COMANDI:
+  --   --   :Copilot status    verifica connessione e account
+  --   --   :Copilot enable    riabilita dopo disable
+  --   --   :Copilot disable   disabilita globalmente
+  --   --   :Copilot panel     10 completamenti alternativi in finestra
+  --   --   :Copilot model     cambia modello (se disponibile)
+  --   --   :Copilot signout   logout dall'account GitHub
+  --   -- ============================================================
+  --   {
+  --     "github/copilot.vim",
+  --     event = "InsertEnter",
+
+  --     init = function()
+  --       -- CRITICO: deve stare in init() (prima del caricamento)
+  --       -- altrimenti copilot.vim registra comunque <Tab>.
+  --       vim.g.copilot_no_tab_map = true
+
+  --       vim.g.copilot_filetypes = {
+  --         python          = true,
+  --         lua             = true,
+  --         typescript      = true,
+  --         javascript      = true,
+  --         TelescopePrompt = false,
+  --         ["dap-repl"]    = false,
+  --         gitcommit       = false,
+  --         gitrebase       = false,
+  --         help            = false,
+  --         text            = false,
+  --       }
+  --     end,
+
+  --     config = function()
+  --       -- Accetta l'intero suggerimento. L'argomento "" = nessun
+  --       -- fallback se non c'e' un suggerimento attivo.
+  --       vim.keymap.set("i", "<C-J>",
+  --         'copilot#Accept("")',
+  --         { expr = true, replace_keycodes = false, silent = true,
+  --           desc = "Copilot: accept suggestion" })
+
+  --       vim.keymap.set("i", "<M-Right>",   "<Plug>(copilot-accept-word)",
+  --         { silent = true, desc = "Copilot: accept next word" })
+  --       vim.keymap.set("i", "<M-C-Right>", "<Plug>(copilot-accept-line)",
+  --         { silent = true, desc = "Copilot: accept next line" })
+  --       vim.keymap.set("i", "<C-]>",       "<Plug>(copilot-dismiss)",
+  --         { silent = true, desc = "Copilot: dismiss" })
+  --       vim.keymap.set("i", "<M-]>",       "<Plug>(copilot-next)",
+  --         { silent = true, desc = "Copilot: next suggestion" })
+  --       vim.keymap.set("i", "<M-[>",       "<Plug>(copilot-previous)",
+  --         { silent = true, desc = "Copilot: prev suggestion" })
+  --       vim.keymap.set("i", "<M-\\>",      "<Plug>(copilot-suggest)",
+  --         { silent = true, desc = "Copilot: request suggestion" })
+
+  --       -- Mantiene il colore del ghost text al cambio tema.
+  --       vim.api.nvim_create_autocmd("ColorScheme", {
+  --         group    = vim.api.nvim_create_augroup("CopilotHighlight", { clear = true }),
+  --         callback = function()
+  --           vim.api.nvim_set_hl(0, "CopilotSuggestion",
+  --             { fg = "#6e6e6e", ctermfg = 8, italic = true, force = true })
+  --         end,
+  --       })
+  --     end,
+  --   },
+
+  -- ============================================================
+  -- zbirenbaum/copilot.lua  --  VERSIONE PRINCIPALE
+  -- ============================================================
+  -- Rewrite Lua puro di github/copilot.vim con:
+  --   • ghost text inline (suggestion.enabled = true)
+  --   • NES - Next Edit Suggestions: Copilot suggerisce la
+  --     PROSSIMA modifica nel file, non solo al cursore.
+  --     Abilitato via server_opts_overrides.
+  --
+  -- NOTE DEPRECAZIONI (upstream, non nel nostro codice):
+  --   • client.is_stopped  →  sarà rimosso in 0.13.
+  --     Traceback in copilot.lua/client/init.lua e copilot-cmp.
+  --     Fix in attesa upstream:
+  --       https://github.com/zbirenbaum/copilot.lua/issues
+  --       https://github.com/zbirenbaum/copilot-cmp/issues
+  --   • vim.validate{<table>}  →  rimosso in Nvim 1.0.
+  --     Traceback in cmp-async-path/init.lua.
+  --     Non impatta il funzionamento; attesa fix upstream.
+  --
+  -- PRIMA AUTENTICAZIONE: :Copilot auth
+  --
+  -- TASTI (insert mode):
+  --   <C-J>        accetta l'intero suggerimento
+  --   <M-Right>    accetta la prossima parola
+  --   <M-C-Right>  accetta la prossima riga
+  --   <C-]>        scarta il suggerimento
+  --   <M-]>        suggerimento successivo
+  --   <M-[>        suggerimento precedente
+  --   <M-\\>        richiedi esplicitamente un suggerimento
+  -- ============================================================
+  {
+    "zbirenbaum/copilot.lua",
+    cmd   = "Copilot",
+    event = "InsertEnter",
+    config = function()
+      require("copilot").setup({
+        -- ── Ghost text inline ─────────────────────────────
+        -- suggestion.enabled = true: i suggerimenti appaiono
+        -- come ghost text inline (non nel menu cmp).
+        suggestion = {
+          enabled          = true,
+          auto_trigger     = true,
+          hide_during_completion = true,
+          debounce         = 75,
+          -- I keymaps sono impostati manualmente sotto
+          -- per coerenza con il resto della configurazione.
+          keymap = {
+            accept        = false,
+            accept_word   = false,
+            accept_line   = false,
+            next          = false,
+            prev          = false,
+            dismiss       = false,
+          },
+        },
+
+        -- Panel disabilitato: usiamo il ghost text inline.
+        panel = { enabled = false },
+
+        -- ── NES: Next Edit Suggestions ─────────────────────
+        -- Copilot suggerisce la prossima modifica logica
+        -- nel file, non solo il completamento al cursore.
+        -- Richiede Language Server >= 1.342.
+        server_opts_overrides = {
+          settings = {
+            advanced = {
+              nextEditSuggestions = {
+                enabled = true,
+              },
+            },
+          },
+        },
+
+        -- ── Filetypes ─────────────────────────────────────
+        filetypes = {
+          python          = true,
+          lua             = true,
+          typescript      = true,
+          javascript      = true,
+          TelescopePrompt = false,
+          ["dap-repl"]    = false,
+          gitcommit       = false,
+          gitrebase       = false,
+          help            = false,
+          text            = false,
+        },
+      })
+
+      -- ── Keymaps usando l'API Lua di copilot.lua ─────────
+      -- A differenza di copilot.vim (che usa <Plug> di Vimscript),
+      -- copilot.lua espone moduli Lua direttamente.
+      local sug = require("copilot.suggestion")
+
+      vim.keymap.set("i", "<C-J>",
+        function() sug.accept() end,
+        { silent = true, desc = "Copilot: accept" })
+      vim.keymap.set("i", "<M-Right>",
+        function() sug.accept_word() end,
+        { silent = true, desc = "Copilot: accept word" })
+      vim.keymap.set("i", "<M-C-Right>",
+        function() sug.accept_line() end,
+        { silent = true, desc = "Copilot: accept line" })
+      vim.keymap.set("i", "<C-]>",
+        function() sug.dismiss() end,
+        { silent = true, desc = "Copilot: dismiss" })
+      vim.keymap.set("i", "<M-]>",
+        function() sug.next() end,
+        { silent = true, desc = "Copilot: next suggestion" })
+      vim.keymap.set("i", "<M-[>",
+        function() sug.prev() end,
+        { silent = true, desc = "Copilot: prev suggestion" })
+      vim.keymap.set("i", "<M-\\>",
+        function()
+          if sug.is_visible() then sug.dismiss()
+          else vim.cmd("Copilot suggestion") end
+        end,
+        { silent = true, desc = "Copilot: toggle suggestion" })
+
+      -- Highlight ghost text
+      vim.api.nvim_create_autocmd("ColorScheme", {
+        group    = vim.api.nvim_create_augroup("CopilotHL", { clear = true }),
+        callback = function()
+          vim.api.nvim_set_hl(0, "CopilotSuggestion",
+            { fg = "#6e6e6e", ctermfg = 8, italic = true, force = true })
+        end,
+      })
+    end,
+  },
+
+
+  -- ============================================================
+  -- CopilotC-Nvim/CopilotChat.nvim  --  AI chat in Neovim
+  -- ============================================================
+  -- Chat con GitHub Copilot direttamente in Neovim, con contesto
+  -- del buffer/selezione corrente, diagnostics LSP e storia.
+  --
+  -- KEYMAPS  (<leader>a):
+  --   <leader>aa   apri chat (buffer completo come contesto)
+  --   <leader>as   chat con selezione visuale
+  --   <leader>aq   domanda rapida (vim.ui.input)
+  --   <leader>ap   prompt actions (via Telescope)
+  --   <leader>ax   chiudi chat
+  --   <leader>ar   reset chat
+  -- ============================================================
+  {
+    "CopilotC-Nvim/CopilotChat.nvim",
+    branch       = "main",
+    dependencies = {
+      "zbirenbaum/copilot.lua",   -- ora il backend principale
+      "nvim-lua/plenary.nvim",
+    },
+    event = "VeryLazy",
+    config = function()
+      local chat = require("CopilotChat")
+
+      chat.setup({
+        debug   = false,
+        model   = "gpt-4o",
+        temperature = 0.1,
+        system_prompt = require("CopilotChat.prompts").COPILOT_INSTRUCTIONS,
+
+        window = {
+          layout   = "vertical",
+          width    = 0.40,
+          height   = 0.50,
+          border   = "single",
+          title    = " Copilot Chat ",
+          zindex   = 50,
+        },
+
+        mappings = {
+          complete        = { insert = "<Tab>" },
+          close           = { normal = "q",    insert = "<C-c>" },
+          reset           = { normal = "<M-r>", insert = "<M-r>" },
+          submit_prompt   = { normal = "<CR>",  insert = "<M-CR>" },
+          accept_diff     = { normal = "<M-a>", insert = "<M-a>" },
+          show_diff       = { normal = "<M-d>" },
+          show_system_prompt = { normal = "<M-s>" },
+          show_user_selection = { normal = "<M-u>" },
+        },
+
+        -- Sorgenti di contesto predefinite
+        context  = "buffer",     -- invia il buffer corrente come contesto
+        history_path = vim.fn.stdpath("data") .. "/copilot_chat_history.json",
+        auto_follow_cursor = true,
+        auto_insert_mode   = false,
+        insert_at_end      = false,
+        clear_chat_on_new_prompt = false,
+        highlight_selection = true,
+      })
+
+      -- ── Integrazione con nvim-cmp ─────────────────────────
+      -- CopilotChat usa vim.fn.complete() per / e @ nel buffer
+      -- di chat. Registriamo il source cmp (se la versione lo
+      -- espone) e configuriamo il filetype "copilot-chat" per
+      -- avere un menu cmp completo nel buffer di chat.
+      --
+      -- Risultato:
+      --   /        → menu cmp con slash commands (stile dropdown)
+      --   @        → menu cmp con agents disponibili
+      --   <leader>cp → action palette via Telescope (gia' configurato)
+      --   vim.ui.select → Telescope dropdown (via telescope-ui-select)
+      local ok_cmp_int, cmp_int = pcall(require, "CopilotChat.integrations.cmp")
+      if ok_cmp_int and cmp_int.setup then
+        cmp_int.setup()
+      end
+
+      -- cmp filetype per il buffer copilot-chat:
+      -- usa copilotchat source (se registrata da cmp_int) + buffer
+      local ok_cmp, cmp_ft = pcall(require, "cmp")
+      if ok_cmp then
+        cmp_ft.setup.filetype("copilot-chat", {
+          -- Completion nel buffer di chat: fonte principale copilotchat
+          -- (comandi / e agenti @), fallback su buffer per parole
+          sources = cmp_ft.config.sources(
+            { { name = "copilotchat" } },
+            { { name = "buffer",      keyword_length = 3 } }
+          ),
+          -- Frecce su/giu come nel resto della config
+          mapping = cmp_ft.mapping.preset.insert({
+            ["<Tab>"]   = cmp_ft.mapping.confirm({ behavior = cmp_ft.ConfirmBehavior.Insert, select = true }),
+            ["<CR>"]    = cmp_ft.mapping.confirm({ behavior = cmp_ft.ConfirmBehavior.Replace, select = false }),
+            ["<C-y>"]   = cmp_ft.mapping.confirm({ behavior = cmp_ft.ConfirmBehavior.Insert, select = true }),
+            ["<C-e>"]   = cmp_ft.mapping.abort(),
+            ["<C-n>"]   = cmp_ft.mapping.select_next_item({ behavior = cmp_ft.SelectBehavior.Select }),
+            ["<C-p>"]   = cmp_ft.mapping.select_prev_item({ behavior = cmp_ft.SelectBehavior.Select }),
+            ["<Down>"]  = cmp_ft.mapping.select_next_item({ behavior = cmp_ft.SelectBehavior.Select }),
+            ["<Up>"]    = cmp_ft.mapping.select_prev_item({ behavior = cmp_ft.SelectBehavior.Select }),
+          }),
+        })
+      end
+
+      -- Keymaps globali
+      vim.keymap.set("n", km.copilot .. "a",
+        function() chat.open() end,
+        { desc = "CopilotChat: open" })
+      vim.keymap.set("v", km.copilot .. "s",
+        function() chat.open() end,
+        { desc = "CopilotChat: open with selection" })
+      vim.keymap.set("n", km.copilot .. "x",
+        function() chat.close() end,
+        { desc = "CopilotChat: close" })
+      vim.keymap.set("n", km.copilot .. "r",
+        function() chat.reset() end,
+        { desc = "CopilotChat: reset" })
+      vim.keymap.set("n", km.copilot .. "q", function()
+        vim.ui.input({ prompt = "Copilot Chat: " }, function(input)
+          if input and input ~= "" then
+            chat.ask(input, {
+              selection = require("CopilotChat.select").buffer,
+            })
+          end
+        end)
+      end, { desc = "CopilotChat: quick ask" })
+      vim.keymap.set({ "n", "v" }, km.copilot .. "p", function()
+        local actions = require("CopilotChat.actions")
+        require("CopilotChat.integrations.telescope").pick(
+          actions.prompt_actions())
+      end, { desc = "CopilotChat: prompt actions" })
+    end,
+  },
+
+  -- ============================================================
+  -- olimorris/codecompanion.nvim  --  AI assistant (Claude)
+  -- ============================================================
+  -- Interfaccia completa per dialogare con Claude (Anthropic) e
+  -- altri LLM direttamente in Neovim. Distinto da CopilotChat:
+  --
+  --   CopilotChat     →  usa GitHub Copilot come backend
+  --   CodeCompanion   →  usa ANTHROPIC_API_KEY, parla con Claude
+  --
+  -- SETUP:
+  --   export ANTHROPIC_API_KEY="sk-ant-..."  (nel .bashrc/.zshrc)
+  --   Opzionale: ollama serve  (per modelli locali gratuiti)
+  --   :checkhealth codecompanion  per verificare dipendenze
+  --
+  -- PROVIDER CONFIGURATI:
+  --   anthropic  →  Claude Opus 4.7 / Sonnet 4.6 (cloud, API key)
+  --   ollama     →  qualsiasi modello locale (gratuito, offline)
+  --                 es. :CodeCompanionChat ollama
+  --
+  -- KEYMAPS (<leader>a):
+  --   <leader>ac       apri/chiudi chat con Claude
+  --   <leader>aI       inline assist (trasforma/crea codice inline)
+  --   <leader>aA       action palette (tutte le azioni disponibili)
+  --   <leader>aB       aggiungi il buffer corrente al contesto chat
+  --
+  -- Nel buffer di chat:
+  --   /buffer          includi un buffer nel contesto
+  --   /file            includi un file dal filesystem
+  --   /symbols         includi i simboli (aerial) del buffer
+  --   /terminal        includi l ouput del terminale
+  --   /help            cerca nella documentazione di Neovim
+  --   /doc             genera documentazione per il codice
+  --   /now             inserisce data/ora corrente
+  --   @full_stack_dev  attiva il ruolo di sviluppatore full-stack
+  --   #editor          usa lo strumento editor (modifica file)
+  --   #cmd_runner      esegui comandi shell
+  --   #files           operazioni sul filesystem
+  --   #web_fetch       recupera contenuto da URL (Claude only)
+  -- ============================================================
+  {
+    "olimorris/codecompanion.nvim",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-treesitter/nvim-treesitter",
+      "nvim-telescope/telescope.nvim",    -- per il picker
+      { "j-hui/fidget.nvim", opts = {} }, -- progress spinner LSP-style
+    },
+    event = "VeryLazy",
+    config = function()
+      require("codecompanion").setup({
+
+        -- ── Adapter: provider LLM ──────────────────────────
+        adapters = {
+          -- Provider principale: Claude di Anthropic
+          -- Richiede ANTHROPIC_API_KEY nell ambiente.
+          -- claude-opus-4-7   = piu potente, piu lento
+          -- claude-sonnet-4-6 = bilanciato (default)
+          -- claude-haiku-4-5  = veloce, economico
+          anthropic = function()
+            return require("codecompanion.adapters").extend("anthropic", {
+              env = { api_key = "ANTHROPIC_API_KEY" },
+              schema = {
+                model = { default = "claude-opus-4-7" },
+              },
+            })
+          end,
+
+          -- Provider alternativo: Claude Sonnet per risposte rapide
+          anthropic_fast = function()
+            return require("codecompanion.adapters").extend("anthropic", {
+              name   = "anthropic_fast",
+              env    = { api_key = "ANTHROPIC_API_KEY" },
+              schema = {
+                model = { default = "claude-sonnet-4-6" },
+              },
+            })
+          end,
+
+          -- Provider locale (opzionale, gratuito):
+          -- Richiede: ollama serve + ollama pull <model>
+          -- Modelli consigliati: llama3.2, codestral, qwen2.5-coder
+          -- Per attivarlo: :CodeCompanionChat ollama
+          ollama = function()
+            return require("codecompanion.adapters").extend("ollama", {
+              schema = {
+                model = { default = "llama3.2" },
+                num_ctx = { default = 16384 },
+              },
+            })
+          end,
+        },
+
+        -- ── Strategie: quale adapter usa ogni modalita ─────
+        strategies = {
+          -- Chat: buffer di conversazione libera
+          chat = {
+            adapter  = "anthropic",
+            -- Tasto per inviare il messaggio (oltre a Enter)
+            keymaps  = {
+              send     = { modes = { n = "<CR>", i = "<C-CR>" } },
+              close    = { modes = { n = "q" } },
+              stop     = { modes = { n = "<C-c>" } },
+              clear    = { modes = { n = "<C-x>" } },
+              next_chat = { modes = { n = "}" } },
+              prev_chat = { modes = { n = "{" } },
+            },
+            slash_commands = {
+              -- /file: usa telescope per il picker
+              ["file"] = {
+                opts = { provider = "telescope" },
+              },
+              -- /buffer: usa telescope
+              ["buffer"] = {
+                opts = { provider = "telescope" },
+              },
+              -- /symbols: usa telescope
+              ["symbols"] = {
+                opts = { provider = "telescope" },
+              },
+            },
+          },
+
+          -- Inline: trasforma/genera codice nel buffer corrente
+          inline = {
+            adapter = "anthropic_fast",   -- Sonnet: piu veloce per inline
+            keymaps = {
+              accept_change = { modes = { n = km.ai .. "a" } },
+              reject_change = { modes = { n = km.ai .. "r" } },
+            },
+          },
+
+          -- Agent: orchestratore con tool use
+          agent = {
+            adapter = "anthropic",
+            tools   = {
+              opts = {
+                auto_submit_errors    = false,
+                auto_submit_success   = false,
+              },
+            },
+          },
+        },
+
+        -- ── Display ────────────────────────────────────────
+        display = {
+          -- Buffer di chat: split verticale a destra
+          chat = {
+            intro_message  = "Ciao! Sono Claude. Come posso aiutarti?",
+            show_header_separator = true,
+            separator      = "â",   -- ─
+            show_token_count = true,            -- mostra token usati
+            token_count_display = function(tokens, adapter)
+              return " " .. tokens .. " tk [" .. adapter.formatted_name .. "]"
+            end,
+            start_in_insert_mode = false,
+            window = {
+              layout  = "vertical",
+              width   = 0.40,              -- 40% della larghezza
+              height  = 1.0,
+              border  = "single",
+              relative = "editor",
+              position = "right",
+            },
+          },
+
+          -- Inline: mostra le modifiche come diff evidenziato
+          inline = {
+            diff = {
+              enabled      = true,
+              close_chat_at = 240,
+              layout       = "vertical",
+              opts         = { "internal", "filler", "closeoff" },
+            },
+          },
+
+          -- Action palette: usa telescope per la selezione
+          action_palette = {
+            provider = "telescope",
+          },
+        },
+
+        -- ── Opzioni generali ───────────────────────────────
+        opts = {
+          log_level = "ERROR",
+          -- Usa CLAUDE.md / .cursor/rules se presenti nel progetto
+          system_prompt = function(opts)
+            return require("codecompanion.config").DEFAULT_SYSTEM_PROMPT(opts)
+          end,
+        },
+      })
+
+      -- ── Keymaps (<leader>a*) ──────────────────────────────
+      -- I keymaps CopilotChat usano aa/as/aq/ap/ax/ar;
+      -- CodeCompanion usa ac/aI/aA/aB per evitare conflitti.
+
+      -- Chat toggle: apre/chiude la finestra di chat con Claude
+      vim.keymap.set({ "n", "v" }, km.ai .. "c",
+        "<CMD>CodeCompanionChat Toggle<CR>",
+        { desc = "Claude: chat toggle" })
+
+      -- Inline assist: trasforma il codice selezionato (o genera)
+      -- Es: seleziona funzione → <leader>aI → scrivi "add docstring"
+      vim.keymap.set({ "n", "v" }, km.ai,
+        "<CMD>CodeCompanion<CR>",
+        { desc = "Claude: inline assist" })
+
+      -- Action palette: lista di tutte le azioni disponibili
+      -- Include: explain code, fix diagnostics, unit tests, docs...
+      vim.keymap.set({ "n", "v" }, km.ai .. "A",
+        "<CMD>CodeCompanionActions<CR>",
+        { desc = "Claude: action palette" })
+
+      -- Aggiungi buffer corrente al contesto della chat attiva
+      vim.keymap.set("n", km.ai .. "B",
+        "<CMD>CodeCompanionChat Add<CR>",
+        { desc = "Claude: add buffer to chat" })
+
+      -- ── Integrazione con fidget.nvim ─────────────────────
+      -- Mostra lo spinner di progresso nella statusline
+      -- mentre Claude elabora la risposta.
+      local ok_fidget, fidget = pcall(require, "fidget")
+      if ok_fidget then
+        local group = vim.api.nvim_create_augroup("CodeCompanionFidget", { clear = true })
+        local handle
+
+        vim.api.nvim_create_autocmd("User", {
+          group   = group,
+          pattern = "CodeCompanionRequestStarted",
+          callback = function(args)
+            handle = fidget.progress.handle.create({
+              title   = " Claude",
+              message = "Thinking...",
+              lsp_client = { name = args.data and args.data.adapter or "Claude" },
+            })
+          end,
+        })
+        vim.api.nvim_create_autocmd("User", {
+          group   = group,
+          pattern = "CodeCompanionRequestFinished",
+          callback = function()
+            if handle then
+              handle:finish()
+              handle = nil
+            end
+          end,
+        })
+      end
+    end,
+  },
+
+
+}

@@ -1,3 +1,4 @@
+local km = require("keymaps")
 return {
 
   -- DB UI
@@ -66,7 +67,7 @@ return {
           end,
         })
 
-      local key_prefix = "<leader>b"
+      local key_prefix = km.db
       for _, cfg in pairs({
         { key = "a", command = "DBUIAddConnection", desc = "DB: Add connection" },
         { key = "f", command = "DBUIFindBuffer", desc = "DB: Find Buffer" },

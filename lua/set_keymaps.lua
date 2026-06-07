@@ -1,88 +1,44 @@
--- navigate through buffer list
-  vim.keymap.set(
-    "n", "<M-l>",
-    "<CMD>bnext<CR>",
-    { noremap = true, desc = "Next Buffer" })
-  vim.keymap.set(
-    "n", "<M-h>",
-    "<CMD>bprev<CR>",
-    { noremap = true, desc = "Prev Buffer" })
-  vim.keymap.set(
-    "n", "<M-k>",
-    "<CMD>bprev<CR>",
-    { noremap = true, desc = "Prev Buffer" })
-  vim.keymap.set(
-    "n", "<M-j>",
-    "<CMD>bnext<CR>",
-    { noremap = true, desc = "Next Buffer" })
+-- ============================================================
+-- set_keymaps.lua  –  Neovim 0.12
+-- ============================================================
+-- Nota: in 0.12 Neovim aggiunge automaticamente questi mapping
+-- globali LSP (attivi dopo LspAttach):
+--   gra → code actions      gri → implementations
+--   grn → rename            grr → references
+--   grt → type definition   grx → run codelens
+--   gO  → document symbols  Ctrl-S (insert) → signature help
+-- Li teniamo come riferimento; i nostri <leader>l* li sovrascrivono.
 
-  -- move lines up- or down-ward
+-- ── Navigazione buffer ──────────────────────────────────────
+vim.keymap.set("n", "<M-l>", "<CMD>bnext<CR>",  { noremap = true, desc = "Buffer: Next" })
+vim.keymap.set("n", "<M-h>", "<CMD>bprev<CR>",  { noremap = true, desc = "Buffer: Prev" })
+vim.keymap.set("n", "<M-j>", "<CMD>bnext<CR>",  { noremap = true, desc = "Buffer: Next" })
+vim.keymap.set("n", "<M-k>", "<CMD>bprev<CR>",  { noremap = true, desc = "Buffer: Prev" })
+
+-- ── Sposta righe su/giù ─────────────────────────────────────
 for _, key in pairs({ "j", "Down" }) do
-  vim.keymap.set(
-    "n", "<M-" .. key .. ">",
-    ":move .+1<CR>==",
-    { noremap = true, desc = "Shift line downward" })
-  vim.keymap.set(
-    "v", "<M-" .. key .. ">",
-    ":move '>+1<CR>gv=gv",
-    { noremap = true, desc = "Shift selection downward" })
-  vim.keymap.set(
-    "i", "<M-" .. key .. ">",
-    ":move .+1<CR>==gi",
-    { noremap = true, desc = "Shift line downward" })
+  vim.keymap.set("n", "<M-" .. key .. ">", ":move .+1<CR>==",      { noremap = true, desc = "Line: shift down" })
+  vim.keymap.set("v", "<M-" .. key .. ">", ":move '>+1<CR>gv=gv",  { noremap = true, desc = "Selection: shift down" })
+  vim.keymap.set("i", "<M-" .. key .. ">", ":move .+1<CR>==gi",    { noremap = true, desc = "Line: shift down" })
 end
 for _, key in pairs({ "k", "Up" }) do
-  vim.keymap.set(
-    "n", "<M-" .. key .. ">",
-    ":move .-2<CR>==",
-    { noremap = true, desc = "Shift line upward" })
-  vim.keymap.set(
-    "i", "<M-" .. key .. ">",
-    ":move .-2<CR>==gi",
-    { noremap = true, desc = "Shift line upward" })
-  vim.keymap.set(
-    "v", "<M-" .. key .. ">",
-    ":move <-2<CR>gv=gv",
-    { noremap = true, desc = "Shift selection upward" })
+  vim.keymap.set("n", "<M-" .. key .. ">", ":move .-2<CR>==",      { noremap = true, desc = "Line: shift up" })
+  vim.keymap.set("v", "<M-" .. key .. ">", ":move '<-2<CR>gv=gv",  { noremap = true, desc = "Selection: shift up" })
+  vim.keymap.set("i", "<M-" .. key .. ">", ":move .-2<CR>==gi",    { noremap = true, desc = "Line: shift up" })
 end
 
--- Keymaps for better default experience
--- See `:help vim.keymap.set()`
-vim.keymap.set(
-  { "n", "v" }, "<Space>",
-  "<Nop>",
-  { silent = true })
+-- ── Comportamento base ──────────────────────────────────────
+vim.keymap.set({ "n", "v" }, "<Space>", "<Nop>", { silent = true })
 
--- Remap for dealing with word wrap
-vim.keymap.set(
-  "n", "k",
-  "v:count == 0 ? 'gk' : 'k'",
-  { expr = true, silent = true })
-vim.keymap.set(
-  "n", "j",
-  "v:count == 0 ? 'gj' : 'j'",
-  { expr = true, silent = true })
+-- Word-wrap aware j/k
+vim.keymap.set("n", "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
+vim.keymap.set("n", "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
 
--- make Y do what is expected to do
-vim.keymap.set(
-  "n", "Y",
-  "y$",
-  { desc = "Copy line from the cursor position till the end" })
+-- Y copia fino a fine riga (coerente con D e C)
+vim.keymap.set("n", "Y", "y$", { desc = "Copy to end of line" })
 
--- window resizing
-vim.keymap.set(
-  "n", "<C-Up>",
-  "<C-W>1-",
-  { desc = "Make window shorter" })
-vim.keymap.set(
-  "n", "<C-Down>",
-  "<C-W>1+",
-  { desc = "Make window taller" })
-vim.keymap.set(
-  "n", "<C-Left>",
-  "<C-W>1<",
-  { desc = "Make window narrower" })
-vim.keymap.set(
-  "n", "<C-Right>",
-  "<C-W>1>",
-  { desc = "Make window wider" })
+-- ── Ridimensiona finestre ────────────────────────────────────
+vim.keymap.set("n", "<C-Up>",    "<C-W>1-", { desc = "Window: shorter" })
+vim.keymap.set("n", "<C-Down>",  "<C-W>1+", { desc = "Window: taller" })
+vim.keymap.set("n", "<C-Left>",  "<C-W>1<", { desc = "Window: narrower" })
+vim.keymap.set("n", "<C-Right>", "<C-W>1>", { desc = "Window: wider" })
