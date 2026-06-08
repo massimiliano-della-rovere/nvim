@@ -503,15 +503,6 @@ return {
       separator = "━━",
     },
     keys = {
-      {
-        km.copilot .. "a",
-        function()
-          local actions = require("CopilotChat.actions")
-          require("CopilotChat.integrations.telescope").pick(actions.prompt_actions())
-        end,
-        mode = { "n", "v" },
-        desc = "CopilotChat prompt Actions",
-      },
       { km.copilot .. "c", ":CopilotChat<CR>", mode = { "n", "v" }, desc = "CopilotChat chat" },
       -- code functions
       { km.copilot .. "d", ":CopilotChatDocs<CR>", mode = "v", desc = "CopilotChat Document code" },
@@ -519,21 +510,6 @@ return {
       { km.copilot .. "f", ":CopilotChatFix<CR>", mode = "v", desc = "CopilotChat Fix code" },
       { km.copilot .. "g", ":CopilotChatCommit<CR>", mode = "v", desc = "CopilotChat Commit code" },
       { km.copilot .. "o", ":CopilotChatOptimize<CR>", mode = "v", desc = "CopilotChat Optimize code" },
-      {
-        km.copilot .. "q",
-        function()
-          vim.ui.input({ prompt = "Copilot Chat: " }, function(input)
-            while input == "" do
-              input = vim.fn.input("Quick Chat:")
-            end
-
-            local chat = require("CopilotChat")
-            chat.ask(input, { selection = "#selection" })
-          end)
-        end,
-        mode = "n",
-        desc = "CopilotChat Query",
-      },
       { km.copilot .. "r", ":CopilotChatReview<CR>", mode = "v", desc = "CopilotChat Review code" },
       { km.copilot .. "t", ":CopilotChatTests<CR>", mode = "v", desc = "CopilotChat Tests code" },
       -- window functions
@@ -546,5 +522,22 @@ return {
       { km.copilot .. "S", ":CopilotChatSave ", mode = "n", desc = "CopilotChat Save chat window" },
       { km.copilot .. "T", ":CopilotChatToggle<CR>", mode = "n", desc = "CopilotChat Toggle chat window" },
     },
+    config = function(_, opts)
+      local copilot_chat = require("CopilotChat")
+      copilot_chat.setup(opts)
+
+      vim.keymap.set({ "n", "v" }, km.copilot .. "a", function()
+        copilot_chat.select_prompt()
+      end, { desc = "CopilotChat prompt Actions" })
+
+      vim.keymap.set("n", km.copilot .. "q", function()
+        vim.ui.input({ prompt = "Copilot Chat: " }, function(input)
+          while input == "" do
+            input = vim.fn.input("Quick Chat:")
+          end
+          copilot_chat.ask(input, { selection = "#selection" })
+        end)
+      end, { desc = "CopilotChat Query" })
+    end,
   },
 }
