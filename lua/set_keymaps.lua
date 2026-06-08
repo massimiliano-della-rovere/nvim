@@ -10,21 +10,21 @@
 -- Li teniamo come riferimento; i nostri <leader>l* li sovrascrivono.
 
 -- ── Navigazione buffer ──────────────────────────────────────
-vim.keymap.set("n", "<M-l>", "<CMD>bnext<CR>",  { noremap = true, desc = "Buffer: Next" })
-vim.keymap.set("n", "<M-h>", "<CMD>bprev<CR>",  { noremap = true, desc = "Buffer: Prev" })
-vim.keymap.set("n", "<M-j>", "<CMD>bnext<CR>",  { noremap = true, desc = "Buffer: Next" })
-vim.keymap.set("n", "<M-k>", "<CMD>bprev<CR>",  { noremap = true, desc = "Buffer: Prev" })
+vim.keymap.set("n", "<M-l>", "<CMD>bnext<CR>", { noremap = true, desc = "Buffer: Next" })
+vim.keymap.set("n", "<M-h>", "<CMD>bprev<CR>", { noremap = true, desc = "Buffer: Prev" })
+vim.keymap.set("n", "<M-j>", "<CMD>bnext<CR>", { noremap = true, desc = "Buffer: Next" })
+vim.keymap.set("n", "<M-k>", "<CMD>bprev<CR>", { noremap = true, desc = "Buffer: Prev" })
 
 -- ── Sposta righe su/giù ─────────────────────────────────────
 for _, key in pairs({ "j", "Down" }) do
-  vim.keymap.set("n", "<M-" .. key .. ">", ":move .+1<CR>==",      { noremap = true, desc = "Line: shift down" })
-  vim.keymap.set("v", "<M-" .. key .. ">", ":move '>+1<CR>gv=gv",  { noremap = true, desc = "Selection: shift down" })
-  vim.keymap.set("i", "<M-" .. key .. ">", ":move .+1<CR>==gi",    { noremap = true, desc = "Line: shift down" })
+  vim.keymap.set("n", "<M-" .. key .. ">", ":move .+1<CR>==", { noremap = true, desc = "Line: shift down" })
+  vim.keymap.set("v", "<M-" .. key .. ">", ":move '>+1<CR>gv=gv", { noremap = true, desc = "Selection: shift down" })
+  vim.keymap.set("i", "<M-" .. key .. ">", ":move .+1<CR>==gi", { noremap = true, desc = "Line: shift down" })
 end
 for _, key in pairs({ "k", "Up" }) do
-  vim.keymap.set("n", "<M-" .. key .. ">", ":move .-2<CR>==",      { noremap = true, desc = "Line: shift up" })
-  vim.keymap.set("v", "<M-" .. key .. ">", ":move '<-2<CR>gv=gv",  { noremap = true, desc = "Selection: shift up" })
-  vim.keymap.set("i", "<M-" .. key .. ">", ":move .-2<CR>==gi",    { noremap = true, desc = "Line: shift up" })
+  vim.keymap.set("n", "<M-" .. key .. ">", ":move .-2<CR>==", { noremap = true, desc = "Line: shift up" })
+  vim.keymap.set("v", "<M-" .. key .. ">", ":move '<-2<CR>gv=gv", { noremap = true, desc = "Selection: shift up" })
+  vim.keymap.set("i", "<M-" .. key .. ">", ":move .-2<CR>==gi", { noremap = true, desc = "Line: shift up" })
 end
 
 -- ── Comportamento base ──────────────────────────────────────
@@ -38,7 +38,11 @@ vim.keymap.set("n", "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = tr
 vim.keymap.set("n", "Y", "y$", { desc = "Copy to end of line" })
 
 -- ── Ridimensiona finestre ────────────────────────────────────
-vim.keymap.set("n", "<C-Up>",    "<C-W>1-", { desc = "Window: shorter" })
-vim.keymap.set("n", "<C-Down>",  "<C-W>1+", { desc = "Window: taller" })
-vim.keymap.set("n", "<C-Left>",  "<C-W>1<", { desc = "Window: narrower" })
+vim.keymap.set("n", "<C-Up>", "<C-W>1-", { desc = "Window: shorter" })
+vim.keymap.set("n", "<C-Down>", "<C-W>1+", { desc = "Window: taller" })
+vim.keymap.set("n", "<C-Left>", "<C-W>1<", { desc = "Window: narrower" })
 vim.keymap.set("n", "<C-Right>", "<C-W>1>", { desc = "Window: wider" })
+
+-- -- Shift-Tab deve rimuovere la tabulazioni
+vim.keymap.set("i", "<S-Tab>", "<C-d>", { noremap = true, silent = true, desc = "Remove indentation" })
+vim.keymap.set("v", "<S-Tab>", "<gv", { noremap = true, silent = true, desc = "Remove indentation" })

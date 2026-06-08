@@ -14,6 +14,17 @@
 -- ============================================================
 
 local km = require("keymaps") -- prefissi centralizzati
+
+local has_non_whitespace_before_cursor = function()
+  local line, col = unpack(vim.api.nvim_win_get_cursor(0))
+  if col == 0 then
+    return false
+  end
+
+  local text = vim.api.nvim_buf_get_lines(0, line - 1, line, true)[1]
+  return text:sub(1, col):find("%S") ~= nil
+end
+
 return {
 
   -- ============================================================
@@ -53,7 +64,7 @@ return {
       "onsails/lspkind.nvim",
     },
     config = function()
-      local cmp     = require("cmp")
+      local cmp = require("cmp")
       local lspkind = require("lspkind")
       local luasnip = require("luasnip")
       require("luasnip.loaders.from_vscode").lazy_load()
@@ -64,10 +75,11 @@ return {
         -- gia' nel menu; il ghost text di cmp e quello di copilot.lua
         -- si sovrapporrebbero.
         experimental = { ghost_text = false },
-        preselect    = cmp.PreselectMode.Item,
+        preselect = cmp.PreselectMode.Item,
         enabled = function()
-          return vim.api.nvim_get_option_value("buftype", { buf = 0 }) ~= "prompt"
-            or require("cmp_dap").is_dap_buffer()
+          return (
+            vim.api.nvim_get_option_value("buftype", { buf = 0 }) ~= "prompt" and has_non_whitespace_before_cursor()
+          ) or require("cmp_dap").is_dap_buffer()
         end,
 
         formatting = {
@@ -75,24 +87,24 @@ return {
           format = lspkind.cmp_format({
             mode = "symbol_text",
             menu = {
-              async_path    = "[Filesystem]",
-              buffer        = "[Buffer]",
-              calc          = "[Calc]",
-              cmdline       = "[CMD]",
+              async_path = "[Filesystem]",
+              buffer = "[Buffer]",
+              calc = "[Calc]",
+              cmdline = "[CMD]",
               -- digraphs = "[Digraphs]",
-              dap           = "[DAP]",
-              git           = "[Git]",
-              nvim_lsp      = "[LSP]",
+              dap = "[DAP]",
+              git = "[Git]",
+              nvim_lsp = "[LSP]",
               latex_symbols = "[LaTeX]",
-              lazydev       = "[LazyDev]",
-              luasnip       = "[Snippet]",
+              lazydev = "[LazyDev]",
+              luasnip = "[Snippet]",
               ["vim-dadbod-completion"] = "[DB]",
-              nvim_lua      = "[LUA]",
-              orgmode       = "[Org]",
-              rg            = "[Rg]",
-              tags          = "[Tag]",
-              tmux          = "[TMux]",
-              copilot       = "[Copilot]",
+              nvim_lua = "[LUA]",
+              orgmode = "[Org]",
+              rg = "[Rg]",
+              tags = "[Tag]",
+              tmux = "[TMux]",
+              copilot = "[Copilot]",
             },
           }),
         },
@@ -102,29 +114,63 @@ return {
             require("luasnip").lsp_expand(args.body)
           end,
         },
-        completion = { completeopt = "menu,menuone" },
+        -- completion = { completeopt = "menu,menuone" },
+        completion = {
+          -- autocomplete = false,
+          autocomplete = { cmp.TriggerEvent.TextChanged },
+          keyword_length = 1,
+          keyword_pattern = [[\%(-\?\w\+\|\w\+\%(-\w*\)\?\)]],
+          completeopt = "menu,menuone,noinsert,noselect",
+        },
         window = {
-          completion    = { border = { "\xe2\x95\xad", "\xe2\x94\x80", "\xe2\x95\xae", "\xe2\x94\x82", "\xe2\x95\xaf", "\xe2\x94\x80", "\xe2\x95\xb0", "\xe2\x94\x82" } },
-          documentation = { border = { "\xe2\x95\xad", "\xe2\x94\x80", "\xe2\x95\xae", "\xe2\x94\x82", "\xe2\x95\xaf", "\xe2\x94\x80", "\xe2\x95\xb0", "\xe2\x94\x82" } },
+          completion = {
+            border = {
+              "\xe2\x95\xad",
+              "\xe2\x94\x80",
+              "\xe2\x95\xae",
+              "\xe2\x94\x82",
+              "\xe2\x95\xaf",
+              "\xe2\x94\x80",
+              "\xe2\x95\xb0",
+              "\xe2\x94\x82",
+            },
+          },
+          documentation = {
+            border = {
+              "\xe2\x95\xad",
+              "\xe2\x94\x80",
+              "\xe2\x95\xae",
+              "\xe2\x94\x82",
+              "\xe2\x95\xaf",
+              "\xe2\x94\x80",
+              "\xe2\x95\xb0",
+              "\xe2\x94\x82",
+            },
+          },
         },
 
         mapping = cmp.mapping.preset.insert({
-          ["<PgUp>"]    = cmp.mapping.scroll_docs(-4),
-          ["<C-u>"]     = cmp.mapping.scroll_docs(-4),
-          ["<PgDown>"]  = cmp.mapping.scroll_docs(4),
-          ["<C-d>"]     = cmp.mapping.scroll_docs(4),
+          ["<C-Space"] = cmp.mapping.complete(),
+          ["<PgUp>"] = cmp.mapping.scroll_docs(-4),
+          ["<C-u>"] = cmp.mapping.scroll_docs(-4),
+          ["<PgDown>"] = cmp.mapping.scroll_docs(4),
+          ["<C-d>"] = cmp.mapping.scroll_docs(4),
           ["<C-Space>"] = cmp.mapping.complete({}),
           ["<CR>"] = cmp.mapping.confirm({
             behavior = cmp.ConfirmBehavior.Replace,
-            select   = false,
+            select = false,
           }),
           ["<Esc>"] = cmp.mapping(function(fallback)
-            if cmp.visible() then cmp.abort() else fallback() end
+            if cmp.visible() then
+              cmp.abort()
+            else
+              fallback()
+            end
           end, { "i", "s" }),
           ["<C-e>"] = cmp.mapping.abort(),
           ["<C-y>"] = cmp.mapping.confirm({
             behavior = cmp.ConfirmBehavior.Insert,
-            select   = true,
+            select = true,
           }),
           ["<C-n>"] = cmp.mapping(function(fallback)
             if cmp.visible() then
@@ -167,7 +213,9 @@ return {
             end
           end, { "i", "s" }),
           ["<C-l>"] = cmp.mapping(function(fallback)
-            if cmp.visible() then return cmp.complete_common_string() end
+            if cmp.visible() then
+              return cmp.complete_common_string()
+            end
             fallback()
           end, { "i", "s" }),
         }),
@@ -176,12 +224,12 @@ return {
         -- group_index = 1: appare nello stesso gruppo di LSP e
         -- snippet, non in un gruppo separato/fallback.
         sources = cmp.config.sources({
-          { name = "copilot",  group_index = 1, priority = 1100 },
+          { name = "copilot", group_index = 1, priority = 1100 },
           { name = "nvim_lsp", group_index = 1, priority = 1000 },
-          { name = "luasnip",  group_index = 1, priority = 900  },
+          { name = "luasnip", group_index = 1, priority = 900 },
           { name = "buffer" },
-          { name = "tags",       keyword_length = 2 },
-          { name = "rg",         keyword_length = 3 },
+          { name = "tags", keyword_length = 2 },
+          { name = "rg", keyword_length = 3 },
           { name = "async_path" },
           { name = "orgmode" },
           { name = "calc" },
@@ -195,9 +243,7 @@ return {
       })
 
       cmp.setup.filetype("gitcommit", {
-        sources = cmp.config.sources(
-          { { name = "git" } },
-          { { name = "buffer" } }),
+        sources = cmp.config.sources({ { name = "git" } }, { { name = "buffer" } }),
       })
       cmp.setup.filetype({ "dap-repl", "dapui_watches", "dapui_hover" }, {
         sources = { { name = "dap" } },
@@ -208,29 +254,45 @@ return {
           ["<Tab>"] = cmp.mapping(function(fallback)
             if cmp.visible() then
               cmp.confirm({ behavior = cmp.ConfirmBehavior.Insert, select = true })
-            else fallback() end
+            else
+              fallback()
+            end
           end, { "c" }),
           ["<C-y>"] = cmp.mapping.confirm({ behavior = cmp.ConfirmBehavior.Insert, select = true }),
-          ["<CR>"]  = cmp.mapping.confirm({ behavior = cmp.ConfirmBehavior.Replace, select = false }),
+          ["<CR>"] = cmp.mapping.confirm({ behavior = cmp.ConfirmBehavior.Replace, select = false }),
           ["<C-n>"] = cmp.mapping(function(fallback)
-            if cmp.visible() then cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
-            else fallback() end
+            if cmp.visible() then
+              cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
+            else
+              fallback()
+            end
           end, { "c" }),
           ["<C-p>"] = cmp.mapping(function(fallback)
-            if cmp.visible() then cmp.select_prev_item({ behavior = cmp.SelectBehavior.Select })
-            else fallback() end
+            if cmp.visible() then
+              cmp.select_prev_item({ behavior = cmp.SelectBehavior.Select })
+            else
+              fallback()
+            end
           end, { "c" }),
           ["<Down>"] = cmp.mapping(function(fallback)
-            if cmp.visible() then cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
-            else fallback() end
+            if cmp.visible() then
+              cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
+            else
+              fallback()
+            end
           end, { "c" }),
-          ["<Up>"]   = cmp.mapping(function(fallback)
-            if cmp.visible() then cmp.select_prev_item({ behavior = cmp.SelectBehavior.Select })
-            else fallback() end
+          ["<Up>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+              cmp.select_prev_item({ behavior = cmp.SelectBehavior.Select })
+            else
+              fallback()
+            end
           end, { "c" }),
           ["<C-e>"] = cmp.mapping.abort(),
           ["<C-l>"] = cmp.mapping(function(fallback)
-            if cmp.visible() then return cmp.complete_common_string() end
+            if cmp.visible() then
+              return cmp.complete_common_string()
+            end
             fallback()
           end, { "c" }),
         }),
@@ -242,48 +304,62 @@ return {
           ["<Tab>"] = cmp.mapping(function(fallback)
             if cmp.visible() then
               cmp.confirm({ behavior = cmp.ConfirmBehavior.Insert, select = true })
-            else fallback() end
+            else
+              fallback()
+            end
           end, { "c" }),
           ["<C-y>"] = cmp.mapping.confirm({ behavior = cmp.ConfirmBehavior.Insert, select = true }),
-          ["<CR>"]  = cmp.mapping.confirm({ behavior = cmp.ConfirmBehavior.Replace, select = false }),
+          ["<CR>"] = cmp.mapping.confirm({ behavior = cmp.ConfirmBehavior.Replace, select = false }),
           ["<C-n>"] = cmp.mapping(function(fallback)
-            if cmp.visible() then cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
-            else fallback() end
+            if cmp.visible() then
+              cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
+            else
+              fallback()
+            end
           end, { "c" }),
           ["<C-p>"] = cmp.mapping(function(fallback)
-            if cmp.visible() then cmp.select_prev_item({ behavior = cmp.SelectBehavior.Select })
-            else fallback() end
+            if cmp.visible() then
+              cmp.select_prev_item({ behavior = cmp.SelectBehavior.Select })
+            else
+              fallback()
+            end
           end, { "c" }),
           ["<Down>"] = cmp.mapping(function(fallback)
-            if cmp.visible() then cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
-            else fallback() end
+            if cmp.visible() then
+              cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
+            else
+              fallback()
+            end
           end, { "c" }),
-          ["<Up>"]   = cmp.mapping(function(fallback)
-            if cmp.visible() then cmp.select_prev_item({ behavior = cmp.SelectBehavior.Select })
-            else fallback() end
+          ["<Up>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+              cmp.select_prev_item({ behavior = cmp.SelectBehavior.Select })
+            else
+              fallback()
+            end
           end, { "c" }),
           ["<C-e>"] = cmp.mapping.abort(),
           ["<C-l>"] = cmp.mapping(function(fallback)
-            if cmp.visible() then return cmp.complete_common_string() end
+            if cmp.visible() then
+              return cmp.complete_common_string()
+            end
             fallback()
           end, { "c" }),
         }),
-        sources = cmp.config.sources(
-          { { name = "async_path", max_item_count = 20 } },
-          { { name = "cmdline" } }),
+        sources = cmp.config.sources({ { name = "async_path", max_item_count = 20 } }, { { name = "cmdline" } }),
       })
 
-      vim.api.nvim_set_hl(0, "CmpItemAbbrDeprecated",  { bg="NONE", strikethrough=true, fg="#808080" })
-      vim.api.nvim_set_hl(0, "CmpItemAbbrMatch",        { bg="NONE", fg="#569CD6" })
-      vim.api.nvim_set_hl(0, "CmpItemAbbrMatchFuzzy",   { link="CmpItemAbbrMatch" })
-      vim.api.nvim_set_hl(0, "CmpItemKindVariable",     { bg="NONE", fg="#9CDCFE" })
-      vim.api.nvim_set_hl(0, "CmpItemKindInterface",    { link="CmpItemKindVariable" })
-      vim.api.nvim_set_hl(0, "CmpItemKindText",         { link="CmpItemKindVariable" })
-      vim.api.nvim_set_hl(0, "CmpItemKindFunction",     { bg="NONE", fg="#C586C0" })
-      vim.api.nvim_set_hl(0, "CmpItemKindMethod",       { link="CmpItemKindFunction" })
-      vim.api.nvim_set_hl(0, "CmpItemKindKeyword",      { bg="NONE", fg="#D4D4D4" })
-      vim.api.nvim_set_hl(0, "CmpItemKindProperty",     { link="CmpItemKindKeyword" })
-      vim.api.nvim_set_hl(0, "CmpItemKindUnit",         { link="CmpItemKindKeyword" })
+      vim.api.nvim_set_hl(0, "CmpItemAbbrDeprecated", { bg = "NONE", strikethrough = true, fg = "#808080" })
+      vim.api.nvim_set_hl(0, "CmpItemAbbrMatch", { bg = "NONE", fg = "#569CD6" })
+      vim.api.nvim_set_hl(0, "CmpItemAbbrMatchFuzzy", { link = "CmpItemAbbrMatch" })
+      vim.api.nvim_set_hl(0, "CmpItemKindVariable", { bg = "NONE", fg = "#9CDCFE" })
+      vim.api.nvim_set_hl(0, "CmpItemKindInterface", { link = "CmpItemKindVariable" })
+      vim.api.nvim_set_hl(0, "CmpItemKindText", { link = "CmpItemKindVariable" })
+      vim.api.nvim_set_hl(0, "CmpItemKindFunction", { bg = "NONE", fg = "#C586C0" })
+      vim.api.nvim_set_hl(0, "CmpItemKindMethod", { link = "CmpItemKindFunction" })
+      vim.api.nvim_set_hl(0, "CmpItemKindKeyword", { bg = "NONE", fg = "#D4D4D4" })
+      vim.api.nvim_set_hl(0, "CmpItemKindProperty", { link = "CmpItemKindKeyword" })
+      vim.api.nvim_set_hl(0, "CmpItemKindUnit", { link = "CmpItemKindKeyword" })
     end,
   },
 
@@ -305,14 +381,14 @@ return {
   -- ============================================================
   {
     "zbirenbaum/copilot.lua",
-    cmd   = "Copilot",
+    cmd = "Copilot",
     event = "InsertEnter",
     config = function()
       require("copilot").setup({
         -- suggestion/panel disabilitati: i suggerimenti
         -- appaiono nel menu cmp (via copilot-cmp).
         suggestion = { enabled = false },
-        panel      = { enabled = false },
+        panel = { enabled = false },
 
         -- NES: Next Edit Suggestions (abilitato anche in
         -- questa versione; i suggerimenti NES appaiono
@@ -325,16 +401,16 @@ return {
           },
         },
         filetypes = {
-          python          = true,
-          lua             = true,
-          typescript      = true,
-          javascript      = true,
+          python = true,
+          lua = true,
+          typescript = true,
+          javascript = true,
           TelescopePrompt = false,
-          ["dap-repl"]    = false,
-          gitcommit       = false,
-          gitrebase       = false,
-          help            = false,
-          text            = false,
+          ["dap-repl"] = false,
+          gitcommit = false,
+          gitrebase = false,
+          help = false,
+          text = false,
         },
       })
     end,
@@ -371,7 +447,7 @@ return {
   -- ============================================================
   {
     "CopilotC-Nvim/CopilotChat.nvim",
-    branch       = "main",
+    branch = "main",
     dependencies = {
       "zbirenbaum/copilot.lua",
       "nvim-lua/plenary.nvim",
@@ -381,69 +457,69 @@ return {
       local chat = require("CopilotChat")
 
       chat.setup({
-        debug   = false,
-        model   = "gpt-4o",
+        debug = false,
+        -- models:
+        -- * claude-haiku-4.5
+        -- * gpt-5-mini* oswe-vscode-prime
+        model = "auto",
         temperature = 0.1,
         system_prompt = require("CopilotChat.prompts").COPILOT_INSTRUCTIONS,
 
         window = {
-          layout   = "vertical",
-          width    = 0.40,
-          height   = 0.50,
-          border   = "single",
-          title    = " Copilot Chat ",
-          zindex   = 50,
+          layout = "vertical",
+          width = 0.40,
+          height = 0.50,
+          border = "single",
+          title = " Copilot Chat ",
+          zindex = 50,
         },
 
         mappings = {
-          complete        = { insert = "<Tab>" },
-          close           = { normal = "q",    insert = "<C-c>" },
-          reset           = { normal = "<M-r>", insert = "<M-r>" },
-          submit_prompt   = { normal = "<CR>",  insert = "<M-CR>" },
-          accept_diff     = { normal = "<M-a>", insert = "<M-a>" },
-          show_diff       = { normal = "<M-d>" },
+          complete = { insert = "<Tab>" },
+          close = { normal = "q", insert = "<C-c>" },
+          reset = { normal = "<M-r>", insert = "<M-r>" },
+          submit_prompt = { normal = "<CR>", insert = "<M-CR>" },
+          accept_diff = { normal = "<M-a>", insert = "<M-a>" },
+          show_diff = { normal = "<M-d>" },
           show_system_prompt = { normal = "<M-s>" },
           show_user_selection = { normal = "<M-u>" },
         },
 
         -- Sorgenti di contesto predefinite
-        context  = "buffer",     -- invia il buffer corrente come contesto
+        context = "buffer", -- invia il buffer corrente come contesto
         history_path = vim.fn.stdpath("data") .. "/copilot_chat_history.json",
         auto_follow_cursor = true,
-        auto_insert_mode   = false,
-        insert_at_end      = false,
+        auto_insert_mode = false,
+        insert_at_end = false,
         clear_chat_on_new_prompt = false,
         highlight_selection = true,
       })
 
       -- Keymaps globali
-      vim.keymap.set("n", km.copilot .. "a",
-        function() chat.open() end,
-        { desc = "CopilotChat: open" })
-      vim.keymap.set("v", km.copilot .. "s",
-        function() chat.open() end,
-        { desc = "CopilotChat: open with selection" })
-      vim.keymap.set("n", km.copilot .. "x",
-        function() chat.close() end,
-        { desc = "CopilotChat: close" })
-      vim.keymap.set("n", km.copilot .. "r",
-        function() chat.reset() end,
-        { desc = "CopilotChat: reset" })
+      vim.keymap.set("n", km.copilot .. "a", function()
+        chat.open()
+      end, { desc = "CopilotChat: open" })
+      vim.keymap.set("v", km.copilot .. "s", function()
+        chat.open()
+      end, { desc = "CopilotChat: open with selection" })
+      vim.keymap.set("n", km.copilot .. "x", function()
+        chat.close()
+      end, { desc = "CopilotChat: close" })
+      vim.keymap.set("n", km.copilot .. "r", function()
+        chat.reset()
+      end, { desc = "CopilotChat: reset" })
       vim.keymap.set("n", km.copilot .. "q", function()
         vim.ui.input({ prompt = "Copilot Chat: " }, function(input)
-          if input and input ~= "" then
-            chat.ask(input, {
-              selection = require("CopilotChat.select").buffer,
-            })
+          while input == "" do
+            input = vim.fn.input("Quick Chat:")
           end
+          chat.ask(input, { selection = "#selection" })
         end)
       end, { desc = "CopilotChat: quick ask" })
       vim.keymap.set({ "n", "v" }, km.copilot .. "p", function()
         local actions = require("CopilotChat.actions")
-        require("CopilotChat.integrations.telescope").pick(
-          actions.prompt_actions())
+        require("CopilotChat.integrations.telescope").pick(actions.prompt_actions())
       end, { desc = "CopilotChat: prompt actions" })
     end,
   },
-
 }
