@@ -89,12 +89,12 @@ return {
         { "<M-6>", desc = "Harpoon: file 6" },
 
         -- ── CodeCompanion (Claude) ─────────────────────
-        { km.ai .. "c", desc = "Claude: chat toggle" },
-        { km.ai .. "I", desc = "Claude: inline assist" },
-        { km.ai .. "A", desc = "Claude: action palette" },
-        { km.ai .. "B", desc = "Claude: add buffer to chat" },
-        { km.ai .. "Ia", desc = "Claude: accept inline change" },
-        { km.ai .. "Ir", desc = "Claude: reject inline change" },
+        -- { km.ai .. "c", desc = "Claude: chat toggle" },
+        -- { km.ai .. "I", desc = "Claude: inline assist" },
+        -- { km.ai .. "A", desc = "Claude: action palette" },
+        -- { km.ai .. "B", desc = "Claude: add buffer to chat" },
+        -- { km.ai .. "Ia", desc = "Claude: accept inline change" },
+        -- { km.ai .. "Ir", desc = "Claude: reject inline change" },
 
         -- ── CopilotChat ────────────────────────────────
         -- { km.copilot .. "a", desc = "CopilotChat: open" },
