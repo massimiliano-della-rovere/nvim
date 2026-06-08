@@ -436,14 +436,6 @@ return {
   -- ============================================================
   -- Chat con GitHub Copilot direttamente in Neovim, con contesto
   -- del buffer/selezione corrente, diagnostics LSP e storia.
-  --
-  -- KEYMAPS  (<leader>a):
-  --   <leader>aa   apri chat (buffer completo come contesto)
-  --   <leader>as   chat con selezione visuale
-  --   <leader>aq   domanda rapida (vim.ui.input)
-  --   <leader>ap   prompt actions (via Telescope)
-  --   <leader>ax   chiudi chat
-  --   <leader>ar   reset chat
   -- ============================================================
   {
     "CopilotC-Nvim/CopilotChat.nvim",
@@ -458,9 +450,11 @@ return {
       -- https://github.com/CopilotC-Nvim/CopilotChat.nvim/blob/main/lua/CopilotChat/config.lua
       debug = false,
       -- models:
+      -- * auto
       -- * claude-haiku-4.5
-      -- * gpt-5-mini* oswe-vscode-prime
-      model = "auto",
+      -- * gpt-5-mini
+      -- * oswe-vscode-prime
+      model = "gpt-5-mini",
       temperature = 0.1,
       trusted_tools = nil,
       -- system_prompt = require("CopilotChat.prompts").COPILOT_INSTRUCTIONS,
@@ -475,7 +469,7 @@ return {
         layout = "vertical",
         width = 0.40,
         height = 0.50,
-        border = "rounded",
+        border = "shadow",
         title = " 🤖 Copilot Chat 🤖 ",
         zindex = 50,
       },
@@ -493,11 +487,12 @@ return {
 
       -- Sorgenti di contesto predefinite
       context = "buffer", -- invia il buffer corrente come contesto
+      log_path = vim.fn.stdpath("state") .. "/CopilotChat.log",
       history_path = vim.fn.stdpath("data") .. "/copilot_chat_history.json",
       auto_follow_cursor = true,
       auto_fold = true,
-      auto_insert_mode = true,
-      insert_at_end = true,
+      auto_insert_mode = false,
+      insert_at_end = false,
       clear_chat_on_new_prompt = false,
       highlight_selection = true,
       separator = "━━",
