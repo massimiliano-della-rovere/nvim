@@ -85,6 +85,8 @@ return {
         { "<M-2>", desc = "Harpoon: file 2" },
         { "<M-3>", desc = "Harpoon: file 3" },
         { "<M-4>", desc = "Harpoon: file 4" },
+        { "<M-5>", desc = "Harpoon: file 5" },
+        { "<M-6>", desc = "Harpoon: file 6" },
 
         -- ── CodeCompanion (Claude) ─────────────────────
         { km.ai .. "c", desc = "Claude: chat toggle" },
@@ -95,12 +97,12 @@ return {
         { km.ai .. "Ir", desc = "Claude: reject inline change" },
 
         -- ── CopilotChat ────────────────────────────────
-        { km.copilot .. "a", desc = "CopilotChat: open" },
-        { km.copilot .. "s", desc = "CopilotChat: selection", mode = { "n", "v" } },
-        { km.copilot .. "q", desc = "CopilotChat: quick ask" },
-        { km.copilot .. "p", desc = "CopilotChat: prompt actions" },
-        { km.copilot .. "x", desc = "CopilotChat: close" },
-        { km.copilot .. "r", desc = "CopilotChat: reset" },
+        -- { km.copilot .. "a", desc = "CopilotChat: open" },
+        -- { km.copilot .. "s", desc = "CopilotChat: selection", mode = { "n", "v" } },
+        -- { km.copilot .. "q", desc = "CopilotChat: quick ask" },
+        -- { km.copilot .. "p", desc = "CopilotChat: prompt actions" },
+        -- { km.copilot .. "x", desc = "CopilotChat: close" },
+        -- { km.copilot .. "r", desc = "CopilotChat: reset" },
 
         -- ── Buffer (bufferline) ────────────────────────
         { km.db .. "p", desc = "Buffer: pick (jump)" },

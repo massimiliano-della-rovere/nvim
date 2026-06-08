@@ -448,78 +448,103 @@ return {
   {
     "CopilotC-Nvim/CopilotChat.nvim",
     branch = "main",
+    build = "make tiktoken",
     dependencies = {
       "zbirenbaum/copilot.lua",
       "nvim-lua/plenary.nvim",
     },
     event = "VeryLazy",
-    config = function()
-      local chat = require("CopilotChat")
+    opts = {
+      -- https://github.com/CopilotC-Nvim/CopilotChat.nvim/blob/main/lua/CopilotChat/config.lua
+      debug = false,
+      -- models:
+      -- * claude-haiku-4.5
+      -- * gpt-5-mini* oswe-vscode-prime
+      model = "auto",
+      temperature = 0.1,
+      trusted_tools = nil,
+      -- system_prompt = require("CopilotChat.prompts").COPILOT_INSTRUCTIONS,
 
-      chat.setup({
-        debug = false,
-        -- models:
-        -- * claude-haiku-4.5
-        -- * gpt-5-mini* oswe-vscode-prime
-        model = "auto",
-        temperature = 0.1,
-        system_prompt = require("CopilotChat.prompts").COPILOT_INSTRUCTIONS,
+      headers = {
+        user = "👤 You",
+        assistant = "🤖 Copilot",
+        tool = "🔧 Tool",
+      },
 
-        window = {
-          layout = "vertical",
-          width = 0.40,
-          height = 0.50,
-          border = "single",
-          title = " Copilot Chat ",
-          zindex = 50,
-        },
+      window = {
+        layout = "vertical",
+        width = 0.40,
+        height = 0.50,
+        border = "rounded",
+        title = " 🤖 Copilot Chat 🤖 ",
+        zindex = 50,
+      },
 
-        mappings = {
-          complete = { insert = "<Tab>" },
-          close = { normal = "q", insert = "<C-c>" },
-          reset = { normal = "<M-r>", insert = "<M-r>" },
-          submit_prompt = { normal = "<CR>", insert = "<M-CR>" },
-          accept_diff = { normal = "<M-a>", insert = "<M-a>" },
-          show_diff = { normal = "<M-d>" },
-          show_system_prompt = { normal = "<M-s>" },
-          show_user_selection = { normal = "<M-u>" },
-        },
+      -- mappings = {
+      --   complete = { insert = "<Tab>" },
+      --   close = { normal = "q", insert = "<C-c>" },
+      --   reset = { normal = "<M-r>", insert = "<M-r>" },
+      --   submit_prompt = { normal = "<CR>", insert = "<M-CR>" },
+      --   accept_diff = { normal = "<M-a>", insert = "<M-a>" },
+      --   show_diff = { normal = "<M-d>" },
+      --   show_system_prompt = { normal = "<M-s>" },
+      --   show_user_selection = { normal = "<M-u>" },
+      -- },
 
-        -- Sorgenti di contesto predefinite
-        context = "buffer", -- invia il buffer corrente come contesto
-        history_path = vim.fn.stdpath("data") .. "/copilot_chat_history.json",
-        auto_follow_cursor = true,
-        auto_insert_mode = false,
-        insert_at_end = false,
-        clear_chat_on_new_prompt = false,
-        highlight_selection = true,
-      })
+      -- Sorgenti di contesto predefinite
+      context = "buffer", -- invia il buffer corrente come contesto
+      history_path = vim.fn.stdpath("data") .. "/copilot_chat_history.json",
+      auto_follow_cursor = true,
+      auto_fold = true,
+      auto_insert_mode = true,
+      insert_at_end = true,
+      clear_chat_on_new_prompt = false,
+      highlight_selection = true,
+      separator = "━━",
+    },
+    keys = {
+      {
+        km.copilot .. "a",
+        function()
+          local actions = require("CopilotChat.actions")
+          require("CopilotChat.integrations.telescope").pick(actions.prompt_actions())
+        end,
+        mode = { "n", "v" },
+        desc = "CopilotChat prompt Actions",
+      },
+      { km.copilot .. "c", ":CopilotChat<CR>", mode = { "n", "v" }, desc = "CopilotChat chat" },
+      -- code functions
+      { km.copilot .. "d", ":CopilotChatDocs<CR>", mode = "v", desc = "CopilotChat Document code" },
+      { km.copilot .. "e", ":CopilotChatExplain<CR>", mode = "v", desc = "CopilotChat Explain code" },
+      { km.copilot .. "f", ":CopilotChatFix<CR>", mode = "v", desc = "CopilotChat Fix code" },
+      { km.copilot .. "g", ":CopilotChatCommit<CR>", mode = "v", desc = "CopilotChat Commit code" },
+      { km.copilot .. "o", ":CopilotChatOptimize<CR>", mode = "v", desc = "CopilotChat Optimize code" },
+      {
+        km.copilot .. "q",
+        function()
+          vim.ui.input({ prompt = "Copilot Chat: " }, function(input)
+            while input == "" do
+              input = vim.fn.input("Quick Chat:")
+            end
 
-      -- Keymaps globali
-      vim.keymap.set("n", km.copilot .. "a", function()
-        chat.open()
-      end, { desc = "CopilotChat: open" })
-      vim.keymap.set("v", km.copilot .. "s", function()
-        chat.open()
-      end, { desc = "CopilotChat: open with selection" })
-      vim.keymap.set("n", km.copilot .. "x", function()
-        chat.close()
-      end, { desc = "CopilotChat: close" })
-      vim.keymap.set("n", km.copilot .. "r", function()
-        chat.reset()
-      end, { desc = "CopilotChat: reset" })
-      vim.keymap.set("n", km.copilot .. "q", function()
-        vim.ui.input({ prompt = "Copilot Chat: " }, function(input)
-          while input == "" do
-            input = vim.fn.input("Quick Chat:")
-          end
-          chat.ask(input, { selection = "#selection" })
-        end)
-      end, { desc = "CopilotChat: quick ask" })
-      vim.keymap.set({ "n", "v" }, km.copilot .. "p", function()
-        local actions = require("CopilotChat.actions")
-        require("CopilotChat.integrations.telescope").pick(actions.prompt_actions())
-      end, { desc = "CopilotChat: prompt actions" })
-    end,
+            local chat = require("CopilotChat")
+            chat.ask(input, { selection = "#selection" })
+          end)
+        end,
+        mode = "n",
+        desc = "CopilotChat Query",
+      },
+      { km.copilot .. "r", ":CopilotChatReview<CR>", mode = "v", desc = "CopilotChat Review code" },
+      { km.copilot .. "t", ":CopilotChatTests<CR>", mode = "v", desc = "CopilotChat Tests code" },
+      -- window functions
+      { km.copilot .. "H", ":CopilotChatStop<CR>", mode = "n", desc = "CopilotChat Halt/Stop chat window" },
+      { km.copilot .. "L", ":CopilotChatLoad ", mode = "n", desc = "CopilotChat Load chat window" },
+      { km.copilot .. "M", ":CopilotChatModel<CR>", mode = "n", desc = "CopilotChat ai Models list" },
+      { km.copilot .. "O", ":CopilotChatOpen<CR>", mode = "n", desc = "CopilotChat Open chat window" },
+      { km.copilot .. "Q", ":CopilotChatClose<CR>", mode = "n", desc = "CopilotChat Close chat window" },
+      { km.copilot .. "R", ":CopilotChatReset<CR>", mode = "n", desc = "CopilotChat Reset chat window" },
+      { km.copilot .. "S", ":CopilotChatSave ", mode = "n", desc = "CopilotChat Save chat window" },
+      { km.copilot .. "T", ":CopilotChatToggle<CR>", mode = "n", desc = "CopilotChat Toggle chat window" },
+    },
   },
 }
