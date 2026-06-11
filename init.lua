@@ -7,7 +7,9 @@
 
 local function download_lazy(path)
   vim.fn.system({
-    "git", "clone", "--filter=blob:none",
+    "git",
+    "clone",
+    "--filter=blob:none",
     "https://github.com/folke/lazy.nvim.git",
     path,
   })
@@ -24,11 +26,12 @@ end
 
 bootstrap_lazy()
 
-require("set_leaders")   -- deve venire prima di lazy.setup()
+require("set_leaders") -- deve venire prima di lazy.setup()
 
+-- require("lsp")
 require("lazy").setup({
   change_detection = { enabled = true },
-  checker          = { enabled = true, notify = false },
+  checker = { enabled = true, notify = false },
   spec = {
     { import = "plugins" },
   },
