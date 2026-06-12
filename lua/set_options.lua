@@ -4,10 +4,10 @@
 
 -- ── Indentazione: sempre spazi, mai tab ─────────────────────
 -- Default globale: espandi i tab in spazi ovunque.
-vim.opt.expandtab   = true
-vim.opt.tabstop     = 2
+vim.opt.expandtab = true
+vim.opt.tabstop = 2
 vim.opt.softtabstop = 2
-vim.opt.shiftwidth  = 2
+vim.opt.shiftwidth = 2
 
 -- ── Per-filetype: larghezza corretta ─────────────────────────
 -- FileType imposta la larghezza giusta per ogni linguaggio.
@@ -20,45 +20,69 @@ do
 
   local function spaces(sw)
     return function(ev)
-      vim.bo[ev.buf].expandtab   = true
-      vim.bo[ev.buf].tabstop     = sw
+      vim.bo[ev.buf].expandtab = true
+      vim.bo[ev.buf].tabstop = sw
       vim.bo[ev.buf].softtabstop = sw
-      vim.bo[ev.buf].shiftwidth  = sw
+      vim.bo[ev.buf].shiftwidth = sw
     end
   end
 
   -- 4 spazi: Python (PEP 8)
   vim.api.nvim_create_autocmd("FileType", {
-    group   = G,
+    group = G,
     pattern = { "python" },
     callback = spaces(4),
   })
 
   -- 2 spazi: tutto il codice e i formati dati
   vim.api.nvim_create_autocmd("FileType", {
-    group   = G,
+    group = G,
     pattern = {
-      "lua", "vim",
-      "javascript", "typescript", "javascriptreact", "typescriptreact",
-      "css", "scss", "less",
-      "html", "htmldjango", "jinja", "xml", "svg",
-      "json", "jsonc", "yaml", "toml",
-      "sh", "bash", "zsh", "fish",
+      "lua",
+      "vim",
+      "javascript",
+      "typescript",
+      "javascriptreact",
+      "typescriptreact",
+      "css",
+      "scss",
+      "less",
+      "html",
+      "htmldjango",
+      "jinja",
+      "xml",
+      "svg",
+      "json",
+      "jsonc",
+      "yaml",
+      "toml",
+      "sh",
+      "bash",
+      "zsh",
+      "fish",
       "sql",
-      "markdown", "rst", "text",
-      "c", "cpp", "rust", "java", "kotlin",
-      "ruby", "perl", "php",
+      "markdown",
+      "rst",
+      "text",
+      "c",
+      "cpp",
+      "rust",
+      "java",
+      "kotlin",
+      "ruby",
+      "perl",
+      "php",
     },
     callback = spaces(2),
   })
 
   -- Makefile: RICHIEDE tab (make fallisce con spazi)
   vim.api.nvim_create_autocmd("FileType", {
-    group   = G,
+    group = G,
     pattern = { "make", "automake" },
     callback = function(ev)
-      vim.bo[ev.buf].expandtab  = false
-      vim.bo[ev.buf].tabstop    = 4
+      vim.bo[ev.buf].expandtab = false
+      vim.bo[ev.buf].tabstop = 4
       vim.bo[ev.buf].shiftwidth = 4
     end,
   })
@@ -69,11 +93,13 @@ do
   -- dopo set_options.lua), così sleuth continua a rilevare
   -- shiftwidth correttamente ma non può disabilitare expandtab.
   vim.api.nvim_create_autocmd("BufReadPost", {
-    group   = G,
+    group = G,
     pattern = "*",
     callback = function(ev)
       vim.schedule(function()
-        if not vim.api.nvim_buf_is_valid(ev.buf) then return end
+        if not vim.api.nvim_buf_is_valid(ev.buf) then
+          return
+        end
         local ft = vim.bo[ev.buf].filetype
         -- Eccezioni: formati che richiedono tab per definizione
         if ft ~= "make" and ft ~= "automake" and ft ~= "gitconfig" then
@@ -86,16 +112,16 @@ end
 
 -- ── Ricerca ──────────────────────────────────────────────────
 vim.opt.path:append("**")
-vim.opt.hlsearch   = true
+vim.opt.hlsearch = true
 vim.opt.ignorecase = true
-vim.opt.smartcase  = true
-vim.opt.wrapscan   = true
+vim.opt.smartcase = true
+vim.opt.wrapscan = true
 
 -- ── Cursore / visualizzazione ────────────────────────────────
-vim.opt.cursorcolumn  = true
-vim.opt.cursorline    = true
-vim.opt.scrolloff     = 4
-vim.opt.virtualedit   = "block"
+vim.opt.cursorcolumn = true
+vim.opt.cursorline = true
+vim.opt.scrolloff = 4
+vim.opt.virtualedit = "block"
 vim.opt.termguicolors = true
 
 -- ── Numeri di riga: assoluto + relativo affiancati ───────────
@@ -103,89 +129,60 @@ vim.opt.termguicolors = true
 -- sulla riga corrente e quello relativo sulle altre.
 -- statuscol.nvim (programming.lua) affianca i due campi su
 -- ogni riga contemporaneamente nella statuscolumn.
-vim.opt.number         = true
+vim.opt.number = true
 vim.opt.relativenumber = true
-vim.opt.signcolumn     = "yes"   -- larghezza fissa, evita il "jump"
+vim.opt.signcolumn = "yes" -- larghezza fissa, evita il "jump"
 
 -- ── Mouse / clipboard ────────────────────────────────────────
-vim.opt.mouse     = "a"
+vim.opt.mouse = "a"
 -- ── Clipboard: WSL / SSH+OSC52 / nativo ────────────────────
--- Rilevamento automatico dell'ambiente per scegliere il provider
--- corretto senza configurazione manuale.
---
--- WSL2:  win32yank.exe (preferito, bidirezionale) o clip.exe (solo copia)
--- SSH:   OSC52  →  incolla nel clipboard del terminale remoto via escape
---        sequence. Richiede terminale compatibile (kitty, wezterm,
---        iTerm2 ≥ 3.5, foot, alacritty ≥ 0.13, Windows Terminal ≥ 1.18).
---        Neovim 0.10+ ha il provider OSC52 built-in.
--- else:  xclip/xsel (X11) o wl-clipboard (Wayland), rilevati in auto.
-do
-  if vim.fn.has("wsl") == 1 then
-    if vim.fn.executable("win32yank.exe") == 1 then
-      -- win32yank: bidirezionale, il più affidabile in WSL2
-      -- https://github.com/equalsraf/win32yank — metti il .exe nel PATH
-      vim.g.clipboard = {
-        name  = "win32yank-wsl",
-        copy  = {
-          ["+"] = "win32yank.exe -i --crlf",
-          ["*"] = "win32yank.exe -i --crlf",
-        },
-        paste = {
-          ["+"] = "win32yank.exe -o --lf",
-          ["*"] = "win32yank.exe -o --lf",
-        },
-        cache_enabled = 0,
-      }
-    else
-      -- Fallback WSL: clip.exe (solo copia; paste via PowerShell)
-      vim.g.clipboard = {
-        name  = "WslClipboard",
-        copy  = {
-          ["+"] = "clip.exe",
-          ["*"] = "clip.exe",
-        },
-        paste = {
-          ["+"] = { "powershell.exe", "-NoProfile", "-c",
-                    "[Console]::Out.Write($(Get-Clipboard -Raw)" ..
-                    ".tostring().replace(\"`r\", \"\"))" },
-          ["*"] = { "powershell.exe", "-NoProfile", "-c",
-                    "[Console]::Out.Write($(Get-Clipboard -Raw)" ..
-                    ".tostring().replace(\"`r\", \"\"))" },
-        },
-        cache_enabled = 0,
-      }
-    end
-
-  elseif os.getenv("SSH_TTY") ~= nil
-      or os.getenv("SSH_CONNECTION") ~= nil then
-    -- SSH: OSC52 (built-in da Neovim 0.10+)
-    -- Il terminale riceve la sequence e gestisce copia/incolla locale.
-    local ok, osc52 = pcall(require, "vim.ui.clipboard.osc52")
-    if ok then
-      vim.g.clipboard = {
-        name  = "OSC52",
-        copy  = {
-          ["+"] = osc52.copy("+"),
-          ["*"] = osc52.copy("*"),
-        },
-        paste = {
-          ["+"] = osc52.paste("+"),
-          ["*"] = osc52.paste("*"),
-        },
-      }
-    end
+-- vim.g.clipboard = "osc52"
+-- Sync clipboard between OS and Neovim.
+vim.opt.clipboard = "unnamed,unnamedplus"
+if os.getenv("DISPLAY") then
+  local function paste()
+    return {
+      vim.fn.split(vim.fn.getreg(""), "\n"),
+      vim.fn.getregtype(""),
+    }
   end
-  -- else: clipboard nativo (xclip/xsel/wl-clipboard); rilevato da Neovim.
+  local osc52 = require("vim.ui.clipboard.osc52")
+  vim.g.clipboard = {
+    name = "osc52",
+    copy = {
+      ["+"] = osc52.copy("+"),
+      ["*"] = osc52.copy("*"),
+    },
+    paste = {
+      ["+"] = paste,
+      ["*"] = paste,
+    },
+  }
+else
+  if os.getenv("WSL_DISTRO_NAME") then
+    -- vim.g.clipboard = "osc52"
+    vim.g.clipboard = {
+      name = "WslClipboard",
+      copy = {
+        ["+"] = "clip.exe",
+        ["*"] = "clip.exe",
+      },
+      paste = {
+        ["+"] = 'powershell.exe -NoLogo -NoProfile -c [Console]::Out.Write($(Get-Clipboard -Raw).tostring().replace("`r", ""))',
+        ["*"] = 'powershell.exe -NoLogo -NoProfile -c [Console]::Out.Write($(Get-Clipboard -Raw).tostring().replace("`r", ""))',
+      },
+      cache_enabled = false,
+    }
+  end
 end
-
 -- unnamed,unnamedplus: sincronizza i registri + e * con il clipboard
 vim.opt.clipboard = "unnamed,unnamedplus"
 
 -- ── Editing ──────────────────────────────────────────────────
 vim.opt.breakindent = true
-vim.opt.splitbelow  = true
-vim.opt.splitright  = true
-vim.opt.nrformats   = { "bin", "octal", "hex" }
+vim.opt.splitbelow = true
+vim.opt.splitright = true
+vim.opt.nrformats = { "bin", "octal", "hex" }
 
 -- ── Undo persistente ─────────────────────────────────────────
 vim.opt.undofile = true
@@ -203,15 +200,15 @@ vim.opt.timeoutlen = 300
 -- ── Simboli di lista ─────────────────────────────────────────
 vim.opt.list = true
 vim.opt.listchars = {
-  eol      = "\xc2\xb6",        -- U+00B6  ¶
-  tab      = "\xe2\x80\xb9\xc2\xb7\xe2\x80\xba",  -- U+2039 U+00B7 U+203A  ‹·›
-  trail    = "\xc2\xb7",        -- U+00B7  ·
-  extends  = "\xe2\x80\xba",    -- U+203A  ›
-  precedes = "\xe2\x80\xb9",    -- U+2039  ‹
-  nbsp     = "\xe2\x80\xa2",    -- U+2022  •
-  conceal  = "\xc3\x97",        -- U+00D7  ×
+  eol = "\xc2\xb6", -- U+00B6  ¶
+  tab = "\xe2\x80\xb9\xc2\xb7\xe2\x80\xba", -- U+2039 U+00B7 U+203A  ‹·›
+  trail = "\xc2\xb7", -- U+00B7  ·
+  extends = "\xe2\x80\xba", -- U+203A  ›
+  precedes = "\xe2\x80\xb9", -- U+2039  ‹
+  nbsp = "\xe2\x80\xa2", -- U+2022  •
+  conceal = "\xc3\x97", -- U+00D7  ×
 }
-vim.opt.showbreak = "\xe2\xae\x8e"  -- U+2B8E  ⮎
+vim.opt.showbreak = "\xe2\xae\x8e" -- U+2B8E  ⮎
 
 -- ── fillchars ────────────────────────────────────────────────
 -- Ogni campo deve essere esattamente 1 codepoint con
@@ -220,27 +217,27 @@ vim.opt.showbreak = "\xe2\xae\x8e"  -- U+2B8E  ⮎
 -- sopravvivano alla serializzazione JSON dei tool e vengano
 -- espansi correttamente dal parser Lua a runtime.
 vim.opt.fillchars = {
-  fold      = "\xc2\xb7",      -- U+00B7  ·   MIDDLE DOT
-  foldopen  = "\xee\x97\x96",  -- U+E5D6      nf-md-chevron_down
-  foldclose = "\xee\x97\x97",  -- U+E5D7      nf-md-chevron_right
-  foldsep   = "\xe2\x94\x82",  -- U+2502  │   BOX DRAWINGS LIGHT VERTICAL
+  fold = "\xc2\xb7", -- U+00B7  ·   MIDDLE DOT
+  foldopen = "\xee\x97\x96", -- U+E5D6      nf-md-chevron_down
+  foldclose = "\xee\x97\x97", -- U+E5D7      nf-md-chevron_right
+  foldsep = "\xe2\x94\x82", -- U+2502  │   BOX DRAWINGS LIGHT VERTICAL
 }
 
 -- ── Folding ───────────────────────────────────────────────────
 -- foldexpr usa la Lua API nativa di Neovim: disponibile prima
 -- che nvim-treesitter sia caricato (vim.treesitter e' core).
 -- nvim-ufo sovrascrivera' foldmethod/foldexpr quando attivo.
-vim.opt.foldlevel      = 99
+vim.opt.foldlevel = 99
 vim.opt.foldlevelstart = 99
-vim.opt.foldmethod     = "expr"
-vim.opt.foldexpr       = "v:lua.vim.treesitter.foldexpr()"
-vim.opt.foldminlines   = 5
-vim.opt.foldenable     = true
-vim.opt.foldnestmax    = 10
+vim.opt.foldmethod = "expr"
+vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+vim.opt.foldminlines = 5
+vim.opt.foldenable = true
+vim.opt.foldnestmax = 10
 
 -- ── Spell ────────────────────────────────────────────────────
-vim.opt.encoding  = "utf-8"
-vim.opt.spell     = false
+vim.opt.encoding = "utf-8"
+vim.opt.spell = false
 vim.opt.spelllang = { "en_us", "it", "eo" }
 local spelldir = vim.fn.stdpath("data") .. "/site/spell"
 if vim.fn.isdirectory(spelldir) == 0 then
@@ -262,17 +259,17 @@ local _border = "single"
 -- piu' con vim.fn.sign_define(); passano per vim.diagnostic.config.
 -- I glifi dei segni usano Nerd Font (PUA); scritti come \xNN.
 vim.diagnostic.config({
-  float         = { border = _border },
+  float = { border = _border },
   severity_sort = true,
   signs = {
     text = {
-      [vim.diagnostic.severity.ERROR] = "\xef\x82\x9a ",  -- nf-fa-times_circle
-      [vim.diagnostic.severity.WARN]  = "\xef\x80\xb1 ",  -- nf-fa-warning
-      [vim.diagnostic.severity.INFO]  = "\xef\x82\x9c ",  -- nf-fa-info_circle
-      [vim.diagnostic.severity.HINT]  = "\xee\x83\x96 ",  -- nf-md-lightbulb
+      [vim.diagnostic.severity.ERROR] = "\xef\x82\x9a ", -- nf-fa-times_circle
+      [vim.diagnostic.severity.WARN] = "\xef\x80\xb1 ", -- nf-fa-warning
+      [vim.diagnostic.severity.INFO] = "\xef\x82\x9c ", -- nf-fa-info_circle
+      [vim.diagnostic.severity.HINT] = "\xee\x83\x96 ", -- nf-md-lightbulb
     },
   },
-  underline        = true,
+  underline = true,
   update_in_insert = true,
-  virtual_text     = true,
+  virtual_text = true,
 })
