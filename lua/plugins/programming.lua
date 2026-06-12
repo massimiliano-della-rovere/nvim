@@ -366,30 +366,6 @@ return {
     end,
   },
 
-  -- ── Gerarchia OOP: navigazione supertypes/subtypes ────────
-  {
-    "massimiliano-della-rovere/hierarchy.nvim",
-    dependencies = { "nvim-treesitter/nvim-treesitter" },
-    config = function()
-      local hierarchy = require("hierarchy")
-      local qf = hierarchy.handlers.quickfix
-      local jump = hierarchy.handlers.jump_first
-
-      vim.keymap.set("n", km.lsp_hier .. "S", function()
-        hierarchy.supertypes(jump)
-      end, { desc = "OOP: jump supertype" })
-      vim.keymap.set("n", km.lsp_hier .. "B", function()
-        hierarchy.subtypes(jump)
-      end, { desc = "OOP: jump subtype" })
-      vim.keymap.set("n", km.lsp_hier .. "s", function()
-        hierarchy.supertypes(qf)
-      end, { desc = "OOP: list supertypes" })
-      vim.keymap.set("n", km.lsp_hier .. "b", function()
-        hierarchy.subtypes(qf)
-      end, { desc = "OOP: list subtypes" })
-    end,
-  },
-
   -- ============================================================
   -- MeanderingProgrammer/render-markdown.nvim
   -- ============================================================
