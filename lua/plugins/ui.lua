@@ -5,6 +5,22 @@
 local km = require("keymaps")
 
 return {
+  -- ── Dressing: uso di telescope invece di vim.ui.select ──
+  {
+    "stevearc/dressing.nvim",
+    dependencies = { "nvim-telescope/telescope.nvim" },
+    event = "VeryLazy",
+    opts = function()
+      return {
+        select = {
+          enabled = true,
+          -- Puoi forzare 'telescope', 'fzf_lua', 'snacks', o lasciarlo su 'builtin'
+          backend = { "telescope", "fzf_lua", "builtin" },
+          telescope = require("telescope.themes").get_cursor(), -- Rende la finestra compatta sotto il cursore
+        },
+      }
+    end,
+  },
 
   -- ── Marks visibili nella gutter ──────────────────────────
   {
