@@ -218,8 +218,8 @@ vim.opt.showbreak = "\xe2\xae\x8e" -- U+2B8E  ⮎
 -- espansi correttamente dal parser Lua a runtime.
 vim.opt.fillchars = {
   fold = "\xc2\xb7", -- U+00B7  ·   MIDDLE DOT
-  foldopen = "\xee\x97\x96", -- U+E5D6      nf-md-chevron_down
-  foldclose = "\xee\x97\x97", -- U+E5D7      nf-md-chevron_right
+  foldopen = "▾",
+  foldclose = "▸",
   foldsep = "\xe2\x94\x82", -- U+2502  │   BOX DRAWINGS LIGHT VERTICAL
 }
 
