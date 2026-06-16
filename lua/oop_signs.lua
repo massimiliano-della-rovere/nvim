@@ -426,6 +426,70 @@ local function get_superclass_nodes(bufnr, class_node, lang)
 end
 
 -- ─────────────────────────────────────────────────────────────
+-- get_dest_sign_text
+-- ─────────────────────────────────────────────────────────────
+-- Restituisce il sign_text (↑ / ↓ / ↕) già calcolato da M.refresh
+-- per il metodo alla riga `row` (0-based) del file `uri`, oppure ""
+-- se il buffer non è caricato o non ha ancora segni piazzati.
+--
+-- Usata per la "seconda freccia" nelle voci dei menu di navigazione:
+-- indica il tipo del metodo di DESTINAZIONE, in modo che ogni voce
+-- sia esteticamente identica al segno mostrato nella sign column
+-- accanto a quel metodo.
+
+local function get_dest_sign_text(uri, row)
+  local ok, bufnr = pcall(vim.uri_to_bufnr, uri)
+  if not ok or not vim.api.nvim_buf_is_loaded(bufnr) then return "" end
+  local marks = vim.api.nvim_buf_get_extmarks(
+    bufnr, NS, { row, 0 }, { row, -1 }, { details = true })
+  if vim.tbl_isempty(marks) then return "" end
+  return marks[1][4].sign_text or ""
+end
+
+-- ─────────────────────────────────────────────────────────────
+-- format_nav_label
+-- ─────────────────────────────────────────────────────────────
+-- Formato uniforme per TUTTE le voci di TUTTI i menu di navigazione
+-- (sia da A.x ↓, sia da B.x ↕, sia da C.x ↑):
+--
+--   {dir} {dest} Classe.metodo  percorso:riga
+--
+--   dir  = direzione del salto: ↑ verso sopraclasse, ↓ verso sottoclasse
+--   dest = sign_text del metodo di DESTINAZIONE (↑/↓/↕), se noto
+--          tramite extmark già piazzato da M.refresh; se non
+--          disponibile (es. file appena caricato non ancora
+--          analizzato) viene omesso e resta solo `dir`.
+
+local function format_nav_label(dir_arrow, dest_uri, dest_row,
+                                 class_name, method_name, path, line1)
+  local dest_sign = get_dest_sign_text(dest_uri, dest_row)
+  if dest_sign ~= "" then
+    return string.format("%s %s %s.%s  %s:%d",
+      dir_arrow, dest_sign, class_name, method_name, path, line1)
+  end
+  return string.format("%s %s.%s  %s:%d",
+    dir_arrow, class_name, method_name, path, line1)
+end
+
+-- ─────────────────────────────────────────────────────────────
+-- is_self_location
+-- ─────────────────────────────────────────────────────────────
+-- Restituisce true se la location LSP (uri, line) si riferisce
+-- allo stesso metodo identificato da (current_uri, def_row).
+-- Usa un range invece dell'uguaglianza esatta perché alcuni LSP
+-- (es. basedpyright) restituiscono la riga del decorator (@override)
+-- invece della riga del def, che può distare 1..N righe.
+--
+-- NOTA: definita qui (prima di find_method_in_buf/collect_*) perché
+-- è usata sia dalle funzioni di raccolta destinazioni sia da
+-- goto_super/goto_subs più sotto.
+
+local function is_self_location(loc_uri, loc_line, current_uri, def_row)
+  if loc_uri ~= current_uri then return false end
+  return loc_line >= (def_row - MAX_DECO_DELTA) and loc_line <= def_row
+end
+
+-- ─────────────────────────────────────────────────────────────
 -- find_method_in_buf
 -- ─────────────────────────────────────────────────────────────
 -- Cerca `method_name` nelle classi il cui nome è in `class_set`
@@ -489,7 +553,10 @@ local function find_method_in_buf(tbuf, method_name, class_set, uri_override)
                 uri   = target_uri,
                 range = { start   = { line = def_row, character = def_col },
                           ["end"] = { line = def_row, character = def_col } },
-                label = string.format("%s.%s  [%s:%d]",
+                -- Direzione ↑: find_method_in_buf è usata solo dal
+                -- Livello 2 (cross-file) di goto_super, sempre verso
+                -- una sopraclasse.
+                label = format_nav_label("\xe2\x86\x91", target_uri, def_row,
                   class_name, method_name, disp_path, def_row + 1),
               })
             end
@@ -602,6 +669,146 @@ local function scan_file_classes(bufnr, lang)
 end
 
 -- ─────────────────────────────────────────────────────────────
+-- collect_super_destinations
+-- ─────────────────────────────────────────────────────────────
+-- BFS verso l'alto nella gerarchia (class_supers) a partire da
+-- `current_class`: per ogni antenato che definisce `method_name`,
+-- produce una destinazione con direzione ↑ e label uniforme
+-- (vedi format_nav_label).  Tutti gli antenati vengono raccolti
+-- (non solo la sopraclasse diretta), così C.x trova sia B.x che A.x.
+-- Condivisa tra goto_super (Livello 1) e show_navigation_menu (↕).
+
+local function collect_super_destinations(current_class, method_name,
+                                            class_supers, class_methods,
+                                            current_uri, fname)
+  local destinations = {}
+  local visited      = {}
+
+  local function walk_up(cname)
+    if visited[cname] then return end
+    visited[cname] = true
+
+    local methods = class_methods[cname]
+    if methods and methods[method_name] then
+      local pos = methods[method_name]
+      table.insert(destinations, {
+        uri   = current_uri,
+        range = { start   = { line = pos.row, character = pos.col },
+                  ["end"] = { line = pos.row, character = pos.col } },
+        label = format_nav_label("\xe2\x86\x91", current_uri, pos.row,
+          cname, method_name, fname, pos.row + 1),
+      })
+    end
+
+    for _, sname in ipairs(class_supers[cname] or {}) do
+      walk_up(sname)
+    end
+  end
+
+  for _, sname in ipairs(class_supers[current_class] or {}) do
+    walk_up(sname)
+  end
+
+  return destinations
+end
+
+-- ─────────────────────────────────────────────────────────────
+-- collect_sub_destinations
+-- ─────────────────────────────────────────────────────────────
+-- Converte i risultati di textDocument/implementation in
+-- destinazioni con direzione ↓, filtrando la self-location e
+-- producendo label uniformi (vedi format_nav_label).
+--
+-- Per location nello stesso file usa `class_methods` (calcolata da
+-- scan_file_classes sul buffer corrente).  Per location in altri
+-- file, carica il buffer (bufload) e applica scan_file_classes anche
+-- lì, così "Classe.metodo  file:riga" è coerente pure cross-file.
+--
+-- Gestisce il caso in cui l'LSP riporti la riga del decorator
+-- invece della riga del "def": cerca in avanti fino a
+-- MAX_DECO_DELTA righe nella mappa riga→{classe,metodo}.
+--
+-- Condivisa tra goto_subs e show_navigation_menu (↕).
+
+local function collect_sub_destinations(locs, current_uri, def_row,
+                                         curr_fname, class_methods)
+  local row_info = {}
+  for cname, methods in pairs(class_methods) do
+    for mname, pos in pairs(methods) do
+      row_info[pos.row] = { cn = cname, mn = mname }
+    end
+  end
+
+  -- Cache delle mappe riga→{classe,metodo} per file esterni già
+  -- scansionati in questa chiamata.
+  local other_row_info = {}
+
+  local destinations = {}
+  for _, loc in ipairs(locs) do
+    local uri   = loc.uri or loc.targetUri
+    local range = loc.range or loc.targetSelectionRange or loc.targetRange
+    local lnum  = range.start.line
+
+    if not is_self_location(uri, lnum, current_uri, def_row) then
+      local info, resolved_row, path
+
+      if uri == current_uri then
+        path = curr_fname
+        for d = 0, MAX_DECO_DELTA do
+          if row_info[lnum + d] then
+            info, resolved_row = row_info[lnum + d], lnum + d
+            break
+          end
+        end
+      else
+        path = vim.fn.fnamemodify(vim.uri_to_fname(uri), ":~:.")
+        if not other_row_info[uri] then
+          local tbuf = vim.uri_to_bufnr(uri)
+          if not vim.api.nvim_buf_is_loaded(tbuf) then vim.fn.bufload(tbuf) end
+          local _, t_cm = scan_file_classes(tbuf, vim.bo[tbuf].filetype)
+          local t_info = {}
+          for cn, methods in pairs(t_cm) do
+            for mn, pos in pairs(methods) do
+              t_info[pos.row] = { cn = cn, mn = mn }
+            end
+          end
+          other_row_info[uri] = t_info
+        end
+        for d = 0, MAX_DECO_DELTA do
+          if other_row_info[uri][lnum + d] then
+            info, resolved_row = other_row_info[uri][lnum + d], lnum + d
+            break
+          end
+        end
+      end
+
+      resolved_row = resolved_row or lnum
+
+      local label
+      if info then
+        label = format_nav_label("\xe2\x86\x93", uri, resolved_row,
+          info.cn, info.mn, path, resolved_row + 1)
+      else
+        -- Classe/metodo non identificati (es. file esterno non
+        -- analizzabile): mantieni comunque la freccia di direzione
+        -- e, se nota, quella di destinazione.
+        local dest_sign = get_dest_sign_text(uri, resolved_row)
+        if dest_sign ~= "" then
+          label = string.format("\xe2\x86\x93 %s %s:%d",
+            dest_sign, path, resolved_row + 1)
+        else
+          label = string.format("\xe2\x86\x93 %s:%d", path, resolved_row + 1)
+        end
+      end
+
+      table.insert(destinations, { uri = uri, range = range, label = label })
+    end
+  end
+
+  return destinations
+end
+
+-- ─────────────────────────────────────────────────────────────
 -- Navigazione verso SOPRACLASSI (segno ↑ e ↕)
 -- ─────────────────────────────────────────────────────────────
 -- Strategia a due livelli:
@@ -637,35 +844,11 @@ local function goto_super(bufnr, row)
   -- ── LIVELLO 1: BFS nell'intero file via TreeSitter ────────────
   local class_supers, class_methods = scan_file_classes(bufnr, lang)
 
-  local destinations = {}
-  local visited      = {}
-  local current_uri  = vim.uri_from_bufnr(bufnr)
-  local fname        = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(bufnr), ":~:.")
+  local current_uri = vim.uri_from_bufnr(bufnr)
+  local fname       = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(bufnr), ":~:.")
 
-  -- Visita ricorsiva verso l'alto: aggiunge alla lista ogni classe
-  -- antenata che definisce method_name, poi risale ulteriormente.
-  local function walk_up(cname)
-    if visited[cname] then return end
-    visited[cname] = true
-    local methods = class_methods[cname]
-    if methods and methods[method_name] then
-      local pos = methods[method_name]
-      table.insert(destinations, {
-        uri   = current_uri,
-        range = { start   = { line = pos.row, character = pos.col },
-                  ["end"] = { line = pos.row, character = pos.col } },
-        label = string.format("%s.%s  [%s:%d]",
-          cname, method_name, fname, pos.row + 1),
-      })
-    end
-    for _, sname in ipairs(class_supers[cname] or {}) do
-      walk_up(sname)
-    end
-  end
-
-  for _, sname in ipairs(class_supers[current_class] or {}) do
-    walk_up(sname)
-  end
+  local destinations = collect_super_destinations(
+    current_class, method_name, class_supers, class_methods, current_uri, fname)
 
   if not vim.tbl_isempty(destinations) then
     pick_and_goto(destinations, "utf-8")
@@ -722,20 +905,6 @@ local function goto_super(bufnr, row)
 end
 
 -- ─────────────────────────────────────────────────────────────
--- is_self_location
--- ─────────────────────────────────────────────────────────────
--- Restituisce true se la location LSP (uri, line) si riferisce
--- allo stesso metodo identificato da (current_uri, def_row).
--- Usa un range invece dell'uguaglianza esatta perché alcuni LSP
--- (es. pyright) restituiscono la riga del decorator (@override)
--- invece della riga del def, che può distare 1..N righe.
-
-local function is_self_location(loc_uri, loc_line, current_uri, def_row)
-  if loc_uri ~= current_uri then return false end
-  return loc_line >= (def_row - MAX_DECO_DELTA) and loc_line <= def_row
-end
-
--- ─────────────────────────────────────────────────────────────
 -- Navigazione verso SOTTOCLASSI (segno ↓ e ↕)
 -- ─────────────────────────────────────────────────────────────
 
@@ -749,8 +918,13 @@ local function goto_subs(bufnr, row)
     return
   end
 
+  local lang             = vim.bo[bufnr].filetype
+  local _, class_methods = scan_file_classes(bufnr, lang)
+  local current_uri      = vim.uri_from_bufnr(bufnr)
+  local curr_fname       = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(bufnr), ":~:.")
+
   client:request("textDocument/implementation", {
-    textDocument = { uri = vim.uri_from_bufnr(bufnr) },
+    textDocument = { uri = current_uri },
     position     = { line = row, character = col },
   }, function(err, result)
     if err or not result then
@@ -760,23 +934,9 @@ local function goto_subs(bufnr, row)
       return
     end
 
-    local current_uri  = vim.uri_from_bufnr(bufnr)
     local locs         = vim.islist(result) and result or { result }
-    local destinations = {}
-
-    for _, loc in ipairs(locs) do
-      local uri   = loc.uri or loc.targetUri
-      local range = loc.range or loc.targetSelectionRange or loc.targetRange
-      local lnum  = range.start.line
-      if not is_self_location(uri, lnum, current_uri, row) then
-        table.insert(destinations, {
-          uri   = uri,
-          range = range,
-          label = string.format("%s:%d",
-            vim.fn.fnamemodify(vim.uri_to_fname(uri), ":~:."), lnum + 1),
-        })
-      end
-    end
+    local destinations = collect_sub_destinations(
+      locs, current_uri, row, curr_fname, class_methods)
 
     vim.schedule(function()
       pick_and_goto(destinations, client.offset_encoding)
@@ -880,18 +1040,62 @@ local function show_navigation_menu(bufnr, row, sign_text)
   local is_both = sign_text:find("\xe2\x86\x95") ~= nil  -- ↕ E2 86 95
 
   if is_both then
-    vim.ui.select(
-      { "\xe2\x86\x91  Vai alla definizione nella sopraclasse",
-        "\xe2\x86\x93  Vai alle implementazioni nelle sottoclassi" },
-      { prompt = "OOP – Direzione:", kind = "oop_navigation" },
-      function(choice)
-        if not choice then return end
-        if choice:sub(1, 3) == "\xe2\x86\x91" then
-          goto_super(bufnr, row)
+    -- Menù unico con tutte le destinazioni (sopraclassi via TreeSitter,
+    -- sottoclassi via LSP implementation), stesso formato di A.x/C.x:
+    --   {dir} {dest} Classe.metodo  file:riga
+    -- vedi format_nav_label, collect_super_destinations,
+    -- collect_sub_destinations.
+
+    local method_name, def_col, def_row = get_method_info_at_row(bufnr, row)
+    if not method_name then return end
+
+    local lang       = vim.bo[bufnr].filetype
+    local class_node = get_containing_class(bufnr, def_row)
+    if not class_node then return end
+
+    local cn_list = class_node:field("name")
+    local cn_node = cn_list and cn_list[1]
+    if not cn_node then return end
+    local current_class = vim.treesitter.get_node_text(cn_node, bufnr)
+
+    local current_uri = vim.uri_from_bufnr(bufnr)
+    local fname       = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(bufnr), ":~:.")
+
+    local class_supers, class_methods = scan_file_classes(bufnr, lang)
+
+    local super_dests = collect_super_destinations(
+      current_class, method_name, class_supers, class_methods, current_uri, fname)
+
+    local impl_client = find_impl_client(bufnr)
+    if not impl_client then
+      -- Nessun client LSP: mostra solo le sopraclassi
+      pick_and_goto(super_dests, "utf-8")
+      return
+    end
+
+    impl_client:request("textDocument/implementation", {
+      textDocument = { uri = current_uri },
+      position     = { line = def_row, character = def_col },
+    }, function(err, result)
+      local sub_dests = {}
+      if not err and result then
+        local locs = vim.islist(result) and result or { result }
+        sub_dests = collect_sub_destinations(
+          locs, current_uri, def_row, fname, class_methods)
+      end
+
+      vim.schedule(function()
+        local all = {}
+        for _, d in ipairs(super_dests) do table.insert(all, d) end
+        for _, d in ipairs(sub_dests)   do table.insert(all, d) end
+        if vim.tbl_isempty(all) then
+          vim.notify("OOP: nessuna destinazione trovata", vim.log.levels.INFO)
         else
-          goto_subs(bufnr, row)
+          pick_and_goto(all, impl_client.offset_encoding)
         end
       end)
+    end, bufnr)
+
   elseif is_up   then goto_super(bufnr, row)
   elseif is_down then goto_subs(bufnr, row)
   end

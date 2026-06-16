@@ -496,6 +496,7 @@ return {
       clear_chat_on_new_prompt = false,
       highlight_selection = true,
       separator = "━━",
+      show_token_count = true,
     },
     keys = {
       { km.copilot .. "c", ":CopilotChat<CR>", mode = { "n", "v" }, desc = "CopilotChat chat" },
