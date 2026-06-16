@@ -252,13 +252,17 @@ return {
       { "rcarriga/nvim-dap-ui" },
     },
     opts = {
+      integrations = {
+        lspconfig = true,
+        cmq = true,
+      },
       library = {
         -- radice della tua configurazione
         { path = vim.fn.stdpath("config") .. "/lua" },
         -- runtime di Neovim (vim.*, vim.api.*, ecc.)
         { path = vim.env.VIMRUNTIME },
         -- tipi di vim.uv (libuv bindings)
-        { path = "${3rd}/luv/library", words = { "vim%.uv" } },
+        { path = "luvit-meta/library", words = { "vim%.uv" } },
         -- lazy.nvim stesso (LazyPlugin, LazySpec, etc.)
         { path = "lazy.nvim" },
         -- nvim-dap-ui: tipi per dapui nelle config dap
