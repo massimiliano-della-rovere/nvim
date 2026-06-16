@@ -19,15 +19,6 @@
 return {
   filetypes = { "lua" },
   root_markers = { ".luarc.json", ".luarc.jsonc", ".git" },
-  -- lazydev inietta le librerie qui tramite before_init
-  before_init = function(params, config)
-    -- Questo è il modo corretto per integrare lazydev con il
-    -- nuovo sistema vim.lsp.config() di Neovim 0.11+
-    local ok, lazydev = pcall(require, "lazydev.lsp")
-    if ok then
-      lazydev.before_init(params, config)
-    end
-  end,
   settings = {
     Lua = {
       runtime = {

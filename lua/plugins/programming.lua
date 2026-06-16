@@ -253,6 +253,8 @@ return {
     },
     opts = {
       library = {
+        -- radice della tua configurazione
+        { path = vim.fn.stdpath("config") .. "/lua" },
         -- runtime di Neovim (vim.*, vim.api.*, ecc.)
         { path = vim.env.VIMRUNTIME },
         -- tipi di vim.uv (libuv bindings)
