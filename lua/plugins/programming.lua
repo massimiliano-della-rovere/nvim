@@ -253,9 +253,12 @@ return {
     },
     opts = {
       library = {
-        -- vim.uv: carica i tipi solo quando il cursore e' su vim.uv
-        { path = "luvit-meta/library", words = { "vim%.uv" } },
+        -- runtime di Neovim (vim.*, vim.api.*, ecc.)
+        { path = vim.env.VIMRUNTIME },
+        -- tipi di vim.uv (libuv bindings)
         { path = "${3rd}/luv/library", words = { "vim%.uv" } },
+        -- lazy.nvim stesso (LazyPlugin, LazySpec, etc.)
+        { path = "lazy.nvim" },
         -- nvim-dap-ui: tipi per dapui nelle config dap
         { path = "nvim-dap-ui", types = true },
       },

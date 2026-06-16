@@ -45,7 +45,7 @@ return {
     "neovim/nvim-lspconfig",
     dependencies = {
       { "j-hui/fidget.nvim", opts = {} },
-      { "folke/lazydev.nvim", opts = {} },
+      "folke/lazydev.nvim",
       "b0o/schemastore.nvim", -- JSON/YAML schema catalog
     },
     config = function()
