@@ -243,8 +243,6 @@ return {
   {
     "folke/lazydev.nvim",
     ft = "lua",
-    lazy = false,
-    priority = 1000, -- carica prima di lua_ls
     dependencies = {
       -- Tipi completi per vim.uv (libuv / luv)
       { "Bilal2453/luvit-meta", lazy = true },
@@ -252,17 +250,11 @@ return {
       { "rcarriga/nvim-dap-ui" },
     },
     opts = {
-      integrations = {
-        lspconfig = true,
-        cmq = true,
-      },
       library = {
-        -- radice della tua configurazione
-        { path = vim.fn.stdpath("config") .. "/lua" },
-        -- runtime di Neovim (vim.*, vim.api.*, ecc.)
-        { path = vim.env.VIMRUNTIME },
+        -- Runtime Neovim: vim.api.*, vim.fn.*, vim.lsp.* ecc.
+        { path = vim.env.VIMRUNTIME .. "/lua", words = { "vim%." } },
         -- tipi di vim.uv (libuv bindings)
-        { path = "luvit-meta/library", words = { "vim%.uv" } },
+        { path = "${3rd}/luv/library", words = { "vim%.uv" } },
         -- lazy.nvim stesso (LazyPlugin, LazySpec, etc.)
         { path = "lazy.nvim" },
         -- nvim-dap-ui: tipi per dapui nelle config dap

@@ -130,7 +130,8 @@ return {
             vim.lsp.codelens.run()
           end, e("LSP: Run codelens"))
           vim.keymap.set("n", km.lsp .. "R", function()
-            vim.lsp.codelens.refresh({ bufnr = ev.buf })
+            vim.lsp.codelens.enable(true, { bufnr = ev.bufnr })
+            -- vim.lsp.codelens.refresh({ bufnr = ev.buf })
           end, e("LSP: Refresh codelens"))
 
           -- Workspace folders

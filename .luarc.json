@@ -1,0 +1,20 @@
+{
+  "diagnostics": {
+    "globals": [
+      "vim"
+    ],
+    "disable": [],
+    "neededFileStatus": {
+      "deprecated": "Any!"
+    }
+  },
+  "workspace": {
+    "library": [
+      "$VIMRUNTIME"
+    ],
+    "checkThirdParty": false
+  },
+  "hint": {
+    "enable": true
+  }
+}

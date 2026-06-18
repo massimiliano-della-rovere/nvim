@@ -18,7 +18,23 @@
 ---@type vim.lsp.Config
 return {
   filetypes = { "lua" },
-  root_markers = { ".luarc.json", ".luarc.jsonc", ".git" },
+  root_markers = { ".git", ".luarc.json", ".luarc.jsonc" },
+  before_init = function(params, config)
+    -- Inietta direttamente il runtime Neovim e i plugin lazy,
+    -- bypassando lazydev (che non riesce a iniettare in questo setup).
+    config.settings = vim.tbl_deep_extend("force", config.settings or {}, {
+      Lua = {
+        workspace = {
+          library = {
+            vim.api.nvim_get_runtime_file("", true),
+            -- vim.env.VIMRUNTIME, -- vim.api.*, vim.fn.*, ecc.
+            vim.fn.stdpath("data") .. "/lazy", -- plugin installati
+            vim.fn.stdpath("config"), -- la config stessa
+          },
+        },
+      },
+    })
+  end,
   settings = {
     Lua = {
       runtime = {
@@ -43,6 +59,9 @@ return {
         -- Disabilita avvisi per campi sconosciuti nei moduli Neovim
         -- (some API fields are undocumented or version-dependent)
         disable = { "missing-fields" },
+        neededFileStatus = {
+          ["deprecated"] = "Any!",
+        },
       },
       completion = {
         -- "Replace": sostituisce l'intera parola con lo snippet
