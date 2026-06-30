@@ -138,8 +138,21 @@ vim.opt.mouse = "a"
 -- ── Clipboard: WSL / SSH+OSC52 / nativo ────────────────────
 -- vim.g.clipboard = "osc52"
 -- Sync clipboard between OS and Neovim.
-vim.opt.clipboard = "unnamed,unnamedplus"
-if os.getenv("DISPLAY") then
+if os.getenv("WSL_DISTRO_NAME") then
+  -- vim.g.clipboard = "osc52"
+  vim.g.clipboard = {
+    name = "WslClipboard",
+    copy = {
+      ["+"] = "clip.exe",
+      ["*"] = "clip.exe",
+    },
+    paste = {
+      ["+"] = 'powershell.exe -NoLogo -NoProfile -c [Console]::Out.Write($(Get-Clipboard -Raw).tostring().replace("`r", ""))',
+      ["*"] = 'powershell.exe -NoLogo -NoProfile -c [Console]::Out.Write($(Get-Clipboard -Raw).tostring().replace("`r", ""))',
+    },
+    cache_enabled = false,
+  }
+else
   local function paste()
     return {
       vim.fn.split(vim.fn.getreg(""), "\n"),
@@ -158,22 +171,6 @@ if os.getenv("DISPLAY") then
       ["*"] = paste,
     },
   }
-else
-  if os.getenv("WSL_DISTRO_NAME") then
-    -- vim.g.clipboard = "osc52"
-    vim.g.clipboard = {
-      name = "WslClipboard",
-      copy = {
-        ["+"] = "clip.exe",
-        ["*"] = "clip.exe",
-      },
-      paste = {
-        ["+"] = 'powershell.exe -NoLogo -NoProfile -c [Console]::Out.Write($(Get-Clipboard -Raw).tostring().replace("`r", ""))',
-        ["*"] = 'powershell.exe -NoLogo -NoProfile -c [Console]::Out.Write($(Get-Clipboard -Raw).tostring().replace("`r", ""))',
-      },
-      cache_enabled = false,
-    }
-  end
 end
 -- unnamed,unnamedplus: sincronizza i registri + e * con il clipboard
 vim.opt.clipboard = "unnamed,unnamedplus"
