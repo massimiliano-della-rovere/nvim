@@ -36,12 +36,6 @@ return {
   -- ── bdelete / bwipe migliorati ────────────────────────────
   "Asheq/close-buffers.vim",
 
-  -- ── File remoti SSH/Docker ────────────────────────────────
-  {
-    "miversen33/netman.nvim",
-    config = function() require("netman") end,
-  },
-
   -- ── Neo-tree: file browser ────────────────────────────────
   {
     "nvim-neo-tree/neo-tree.nvim",

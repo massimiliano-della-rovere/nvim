@@ -26,9 +26,12 @@ return {
   {
     "nvim-neotest/neotest",
     dependencies = {
+      -- antoinemadec/FixCursorHold.nvim rimosso (2026): il bug di
+      -- performance su CursorHold che risolveva è stato corretto nel
+      -- core di Neovim dalla 0.8 in poi; lo stesso autore del plugin
+      -- lo conferma nel README. Su 0.12/0.13 è inutile.
       "nvim-neotest/nvim-nio",
       "nvim-lua/plenary.nvim",
-      "antoinemadec/FixCursorHold.nvim",
       "nvim-treesitter/nvim-treesitter",
       -- ── Adapter ────────────────────────────────────────
       "nvim-neotest/neotest-python",   -- pytest / unittest

@@ -5,22 +5,12 @@
 local km = require("keymaps")
 
 return {
-  -- ── Dressing: uso di telescope invece di vim.ui.select ──
-  {
-    "stevearc/dressing.nvim",
-    dependencies = { "nvim-telescope/telescope.nvim" },
-    event = "VeryLazy",
-    opts = function()
-      return {
-        select = {
-          enabled = true,
-          -- Puoi forzare 'telescope', 'fzf_lua', 'snacks', o lasciarlo su 'builtin'
-          backend = { "telescope", "fzf_lua", "builtin" },
-          telescope = require("telescope.themes").get_cursor(), -- Rende la finestra compatta sotto il cursore
-        },
-      }
-    end,
-  },
+  -- NOTA: dressing.nvim è stato rimosso (2026): l'autore (stevearc) ha
+  -- archiviato il plugin a feb 2025 perché ridondante con i backend
+  -- vim.ui.select nativi dei picker moderni. In telescope.lua è già
+  -- attiva "nvim-telescope/telescope-ui-select.nvim", che copre lo
+  -- stesso ruolo (override di vim.ui.select via telescope) senza
+  -- dipendere da un progetto non più mantenuto.
 
   -- ── Marks visibili nella gutter ──────────────────────────
   {

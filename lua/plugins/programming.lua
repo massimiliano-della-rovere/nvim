@@ -8,8 +8,11 @@ return {
   -- ── Rilevamento automatico tab/shiftwidth ─────────────────
   "tpope/vim-sleuth",
 
-  -- ── Commenti gc/gb ────────────────────────────────────────
-  { "numToStr/Comment.nvim", opts = {} },
+  -- NOTA: numToStr/Comment.nvim rimosso (2026): gc/gcc sono nativi
+  -- da Neovim 0.10 (rispettano 'commentstring' per filetype). Se in
+  -- futuro serve commentstring "context-aware" per linguaggi
+  -- embedded (es. JS dentro HTML), reintrodurre il plugin insieme a
+  -- ts_context_commentstring; finché non serve, è peso morto.
 
   -- ── Evidenzia parola sotto cursore ────────────────────────
   {
