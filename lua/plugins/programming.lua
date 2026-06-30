@@ -194,7 +194,7 @@ return {
   -- ── Outline del codice (Aerial) ───────────────────────────
   {
     "stevearc/aerial.nvim",
-    dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-tree/nvim-web-devicons" },
+    dependencies = { "nvim-tree/nvim-web-devicons" },
     config = function()
       local aerial_inherited = require("aerial_inherited")
 
@@ -278,7 +278,6 @@ return {
   {
     "Dronakurl/injectme.nvim",
     dependencies = {
-      "nvim-treesitter/nvim-treesitter",
       "nvim-lua/plenary.nvim",
       "nvim-telescope/telescope.nvim",
     },
@@ -385,7 +384,6 @@ return {
     "MeanderingProgrammer/render-markdown.nvim",
     ft = { "markdown", "rmd", "org", "norg" },
     dependencies = {
-      "nvim-treesitter/nvim-treesitter",
       "nvim-tree/nvim-web-devicons",
     },
     config = function()

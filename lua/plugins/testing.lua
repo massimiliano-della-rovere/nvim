@@ -32,7 +32,8 @@ return {
       -- lo conferma nel README. Su 0.12/0.13 è inutile.
       "nvim-neotest/nvim-nio",
       "nvim-lua/plenary.nvim",
-      "nvim-treesitter/nvim-treesitter",
+      -- il parser treesitter serve solo per i tag dei test (Lua/Python/JS);
+      -- l'installazione e' gestita da tree-sitter-manager.nvim (treesitter.lua)
       -- ── Adapter ────────────────────────────────────────
       "nvim-neotest/neotest-python",   -- pytest / unittest
       "marilari88/neotest-vitest",     -- Vitest

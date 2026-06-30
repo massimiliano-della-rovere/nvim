@@ -42,9 +42,8 @@ return {
   {
     -- https://github.com/kevinhwang91/nvim-bqf
     "kevinhwang91/nvim-bqf",
-    dependencies = {
-      {"nvim-treesitter/nvim-treesitter", build = ":TSUpdate"},
-    },
+    -- highlighting nel preview richiede solo il parser installato
+    -- (tree-sitter-manager.nvim in treesitter.lua), non un plugin
     ft = "qf",
     event = "VeryLazy",
     opts = {},

@@ -61,7 +61,7 @@ return {
     -- https://github.com/Wansmer/treesj
     "Wansmer/treesj",
     -- keys = { "<space>m", "<space>j", "<space>s" },
-    dependencies = { "nvim-treesitter/nvim-treesitter" },
+    -- richiede solo il parser installato (tree-sitter-manager.nvim)
     cmd = { "TSJToggle", "TSJSplit", "TSJJoin" },
     config = function()
       local tsj = require("treesj")

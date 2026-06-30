@@ -45,7 +45,6 @@ return {
       -- Call hierarchy ad albero ricorsivo (sostituisce lsp_incoming/outgoing_calls)
       "jmacadie/telescope-hierarchy.nvim",
       "nvim-web-devicons",
-      "nvim-treesitter/nvim-treesitter",
       "xiyaowong/telescope-emoji.nvim",
       "ghassan0/telescope-glyph.nvim",
       "nvim-telescope/telescope-ui-select.nvim",
