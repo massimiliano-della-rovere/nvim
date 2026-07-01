@@ -91,17 +91,15 @@ local function setup_native_highlight_and_indent()
       local too_big = ok and stats and stats.size > 100 * 1024
       if too_big then return end
 
-      -- vim.treesitter.start() fallisce (raises) se non esiste un
-      -- parser per questo filetype. In quel caso NON tocchiamo
-      -- indentexpr: lasciamo che i ftplugin nativi di Neovim (o le
-      -- impostazioni in set_options.lua) lo gestiscano.
-      -- Impostare indentexpr = vim.treesitter.indentexpr() senza un
-      -- parser disponibile fa restituire -1 a ogni <CR>, portando il
-      -- cursore a colonna 1 invece di mantenere l'indentazione.
-      local parser_ok = pcall(vim.treesitter.start, args.buf)
-      if parser_ok then
-        vim.bo[args.buf].indentexpr = "v:lua.vim.treesitter.indentexpr()"
-      end
+      -- Solo highlighting treesitter nativo.
+      -- NON impostiamo indentexpr: vim.treesitter.indentexpr()
+      -- richiede indent queries (indent.scm) che erano fornite dalla
+      -- cartella queries/ di nvim-treesitter. Senza di esse restituisce
+      -- -1 per ogni <CR>, portando il cursore a colonna 1 anche quando
+      -- il parser e' installato (es. Python). L'indentazione viene
+      -- gestita dai ftplugin nativi di Neovim (python3indent, cindent,
+      -- ecc.) che sono gia' corretti e non richiedono treesitter.
+      pcall(vim.treesitter.start, args.buf)
     end,
   })
 end
