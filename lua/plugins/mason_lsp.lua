@@ -22,6 +22,28 @@
 local km = require("keymaps") -- prefissi centralizzati
 local BORDER = "single"
 
+-- Directory di installazione Mason per-host.
+-- Con home condivisa tra container diversi (es. Bookworm e Trixie),
+-- Mason installerebbe tutto in ~/.local/share/nvim/mason/ condivisa:
+-- venv Python, binari compilati, ecc. punterebbero alla versione
+-- dell'interprete/GLIBC del container che ha fatto l'installazione,
+-- rompendosi sugli altri (es. basedpyright con python3.14 non gira
+-- su Bookworm che ha python3.11).
+-- La soluzione e' una directory per-host: ogni container installa
+-- i propri tool in modo completamente indipendente.
+--
+-- Risultato:
+--   Trixie   → ~/.local/share/nvim/mason-<hostname-trixie>/
+--   Bookworm → ~/.local/share/nvim/mason-<hostname-bookworm>/
+--   Ubuntu   → ~/.local/share/nvim/mason-<hostname-ubuntu>/
+--
+-- ATTENZIONE: al primo avvio dopo questa modifica, Mason non trovera'
+-- i package installati nella vecchia directory e li reinstallera'
+-- automaticamente (automatic_installation = true). L'operazione
+-- richiede qualche minuto per container.
+local hostname = (vim.uv.os_gethostname() or "default"):gsub("[^%w.-]", "_")
+local mason_install_dir = vim.fn.stdpath("data") .. "/mason-" .. hostname
+
 local mason_servers = {
   "bashls", -- Bash          → lsp/bashls.lua
   "cssls", -- CSS           → lsp/cssls.lua
@@ -154,7 +176,10 @@ return {
   {
     "mason-org/mason.nvim",
     config = function()
-      require("mason").setup({ ui = { border = "single" } })
+      require("mason").setup({
+        install_root_dir = mason_install_dir,
+        ui = { border = "single" },
+      })
     end,
   },
 
