@@ -50,6 +50,44 @@ local ensure_installed = {
   "bash", "css", "javascript", "python", "sql", "typescript",
 }
 
+-- Verifica a runtime se il tree-sitter CLI e' effettivamente
+-- eseguibile su questo sistema. Non basta `vim.fn.executable("tree-sitter")`
+-- (controlla solo che il file esista ed abbia il bit +x): su sistemi
+-- con home condivisa tra container con GLIBC diverse (es. Bookworm
+-- con GLIBC 2.36 e Trixie/Ubuntu con GLIBC 2.39) il binario puo'
+-- essere presente ma inutilizzabile per via di dipendenze GLIBC
+-- soddisfatte solo sul sistema in cui e' stato installato.
+-- Un `tree-sitter --version` verifica l'effettiva eseguibilita'.
+local function ts_cli_usable()
+  if vim.fn.executable("tree-sitter") == 0 then
+    return false, "tree-sitter CLI non trovato in PATH"
+  end
+  -- vim.system e' disponibile da Neovim 0.10+ (stabile su 0.12/0.13).
+  if vim.system then
+    local result = vim.system({ "tree-sitter", "--version" }, { timeout = 3000 }):wait()
+    if result.code ~= 0 then
+      return false,
+        "tree-sitter CLI non eseguibile su questo sistema "
+          .. "(probabile incompatibilita' GLIBC). "
+          .. "I parser gia' installati restano disponibili."
+    end
+  else
+    -- fallback per versioni precedenti (non dovrebbe mai attivarsi
+    -- su 0.12+, ma meglio non crashare)
+    local handle = io.popen("tree-sitter --version 2>&1")
+    if handle then
+      local out = handle:read("*a")
+      handle:close()
+      if not out:match("tree%-sitter") then
+        return false,
+          "tree-sitter CLI non eseguibile (GLIBC incompatibile?). "
+            .. "I parser gia' installati restano disponibili."
+      end
+    end
+  end
+  return true, nil
+end
+
 -- Installa (in background, una sola volta) i parser di
 -- ensure_installed non ancora presenti su disco. Controllo difensivo
 -- via filesystem invece che via API interna del plugin (di cui non
@@ -138,24 +176,33 @@ return {
     -- Requisiti di sistema (non installabili da qui):
     --   tree-sitter CLI, git, compilatore C (gcc/clang)
     config = function()
-      require("tree-sitter-manager").setup({
-        -- Path di default: dentro stdpath("data")/site, che e'
-        -- automaticamente su 'runtimepath' (vedi :h packages).
-        -- nvim-treesitter-context e nvim-treesitter-textobjects
-        -- (sotto) cercano i parser solo via vim.treesitter, che
-        -- scansiona runtimepath: percorso compatibile, nessuna
-        -- modifica a rtp necessaria.
-        parser_dir = vim.fn.stdpath("data") .. "/site/parser",
-        query_dir = vim.fn.stdpath("data") .. "/site/queries",
+      local cli_ok, cli_err = ts_cli_usable()
 
-        -- Installa automaticamente il parser mancante quando apri
-        -- un file di un tipo non ancora installato (equivalente al
-        -- vecchio auto_install = true).
-        auto_install = true,
-        noauto_install = bundled_languages,
+      require("tree-sitter-manager").setup({
+        parser_dir = vim.fn.stdpath("data") .. "/site/parser",
+        query_dir  = vim.fn.stdpath("data") .. "/site/queries",
+
+        -- auto_install e' disabilitato se il CLI non e' utilizzabile
+        -- (es. container Bookworm con home condivisa da Trixie/Ubuntu:
+        -- il binario tree-sitter e' compilato per GLIBC 2.39 ma
+        -- Bookworm ha GLIBC 2.36). I parser gia' compilati sull'altro
+        -- sistema restano comunque accessibili: sono semplice codice C
+        -- senza dipendenze GLIBC avanzate.
+        auto_install    = cli_ok,
+        noauto_install  = bundled_languages,
       })
 
-      install_missing_parsers()
+      if cli_ok then
+        install_missing_parsers()
+      else
+        vim.notify(
+          "tree-sitter-manager: " .. cli_err .. "\n"
+            .. "Installazione parser disabilitata su questo sistema.\n"
+            .. "I parser compilati su altri sistemi nella home condivisa "
+            .. "sono comunque attivi.",
+          vim.log.levels.INFO
+        )
+      end
     end,
   },
 
