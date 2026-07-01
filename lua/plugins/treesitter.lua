@@ -91,8 +91,17 @@ local function setup_native_highlight_and_indent()
       local too_big = ok and stats and stats.size > 100 * 1024
       if too_big then return end
 
-      pcall(vim.treesitter.start, args.buf)
-      vim.bo[args.buf].indentexpr = "v:lua.vim.treesitter.indentexpr()"
+      -- vim.treesitter.start() fallisce (raises) se non esiste un
+      -- parser per questo filetype. In quel caso NON tocchiamo
+      -- indentexpr: lasciamo che i ftplugin nativi di Neovim (o le
+      -- impostazioni in set_options.lua) lo gestiscano.
+      -- Impostare indentexpr = vim.treesitter.indentexpr() senza un
+      -- parser disponibile fa restituire -1 a ogni <CR>, portando il
+      -- cursore a colonna 1 invece di mantenere l'indentazione.
+      local parser_ok = pcall(vim.treesitter.start, args.buf)
+      if parser_ok then
+        vim.bo[args.buf].indentexpr = "v:lua.vim.treesitter.indentexpr()"
+      end
     end,
   })
 end
