@@ -92,6 +92,14 @@ return {
         defaults = {
           layout_strategy = "horizontal",
           layout_config   = { height = 0.999, width = 0.999 },
+          -- treesitter = false nella preview: evita il conflitto tra
+          -- l'highlighting nativo che attiviamo in treesitter.lua
+          -- (autocmd FileType → vim.treesitter.start()) e il tentativo
+          -- parallelo di Telescope di attivare treesitter sugli stessi
+          -- buffer di preview, che genera "Parser could not be created
+          -- for buffer X and language Y". La syntax regex di Vim e'
+          -- sufficiente per la navigazione nella preview.
+          preview = { treesitter = false },
           mappings = {
             i = { ["<M-d>"] = actions.delete_buffer },
             n = { ["<M-d>"] = actions.delete_buffer },
