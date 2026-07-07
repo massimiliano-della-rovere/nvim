@@ -1,4 +1,15 @@
 local km = require("keymaps")
+local python_env = require("utils.python_env")
+local is_python2 = python_env.is_python2()
+
+-- Su ambienti Python 2.x, black/isort/flake8 non sono compatibili
+-- (richiedono Python 3.6+). Li escludiamo da formatter, linter e
+-- lista di installazione Mason. jedi-language-server (configurato
+-- in mason_lsp.lua) fornisce diagnostics di base come sostituto.
+local python_formatters = is_python2 and {} or { "isort", "black" }
+local python_linters    = is_python2 and {} or { "flake8" }
+local python_tools      = is_python2 and {} or { "black", "isort", "flake8" }
+
 -- ============================================================
 -- plugins/formatting.lua  --  Neovim 0.12 / 0.13-compatible
 -- ============================================================
@@ -29,7 +40,7 @@ return {
         -- Lista ordinata: vengono eseguiti in sequenza.
         -- "lsp" usa il formatter del server LSP come fallback.
         formatters_by_ft = {
-          python = { "isort", "black" },
+          python = python_formatters,
           javascript = { "prettier" },
           typescript = { "prettier" },
           javascriptreact = { "prettier" },
@@ -178,7 +189,7 @@ return {
       local lint = require("lint")
 
       lint.linters_by_ft = {
-        python = { "flake8" },
+        python = python_linters,
         javascript = { "eslint_d" },
         typescript = { "eslint_d" },
         lua = { "luacheck" },
@@ -212,23 +223,20 @@ return {
     dependencies = { "mason-org/mason.nvim" },
     config = function()
       require("mason-tool-installer").setup({
-        ensure_installed = {
+        ensure_installed = vim.list_extend({
           -- Formatter
-          "black", -- Python
-          "isort", -- Python imports
           "prettier", -- JS/TS/CSS/HTML/JSON/Markdown
           "stylua", -- Lua
           "yamlfmt", -- YAML
           "shfmt", -- Shell
           "sqlfmt", -- SQL
           -- Linter
-          "flake8", -- Python
           "eslint_d", -- JS/TS (daemon, veloce)
           "luacheck", -- Lua
           "shellcheck", -- Shell
           "yamllint", -- YAML
           "markdownlint", -- Markdown
-        },
+        }, python_tools),
         auto_update = false,
         run_on_config = true,
       })

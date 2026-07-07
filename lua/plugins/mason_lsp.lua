@@ -45,39 +45,11 @@ local hostname = (vim.uv.os_gethostname() or "default"):gsub("[^%w.-]", "_")
 local mason_install_dir = vim.fn.stdpath("data") .. "/mason-" .. hostname
 
 -- Server LSP Python dipende dal sistema:
---   Bookworm (Python 2.7 legacy): jedi-language-server
---     Jedi ha supporto eccellente per Python 2.7; il server gira
---     su Python 3.11 (disponibile su Bookworm) ma analizza
---     l'ambiente 2.7 tramite settings.jedi.interpreter.
---   Tutti gli altri sistemi: basedpyright
---     Type checker moderno, inlay hints, analisi workspace.
---
--- Il rilevamento usa VIRTUAL_ENV e python2.7 in PATH invece
--- dell'hostname cosi' funziona anche se il container viene
--- rinominato o replicato.
-local python_lsp
-local is_python2_env = false
-
-local venv = os.getenv("VIRTUAL_ENV") or ""
-if venv:match("py2") or venv:match("python2") then
-  is_python2_env = true
-else
-  -- Controlla se python2.7 e' il python di sistema (non in un venv)
-  local handle = io.popen("python --version 2>&1")
-  if handle then
-    local ver = handle:read("*l") or ""
-    handle:close()
-    if ver:match("^Python 2%.") then
-      is_python2_env = true
-    end
-  end
-end
-
-if is_python2_env then
-  python_lsp = "jedi_language_server"
-else
-  python_lsp = "basedpyright"
-end
+--   Python 2.x: jedi-language-server
+--   Python 3.x: basedpyright
+-- (logica di rilevamento in lua/utils/python_env.lua)
+local python_env = require("utils.python_env")
+local python_lsp = python_env.is_python2() and "jedi_language_server" or "basedpyright"
 
 local mason_servers = {
   "bashls", -- Bash          → lsp/bashls.lua
