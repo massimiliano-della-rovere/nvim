@@ -49,4 +49,39 @@ function M.is_python2()
   return _cache
 end
 
+
+-- Restituisce PYTHONPATH filtrata: rimuove le voci che contengono
+-- un sitecustomize.py scritto per Python 2 (che chiama
+-- sys.setdefaultencoding(), rimosso in Python 3).
+-- Le altre voci (es. path di progetto senza sitecustomize.py)
+-- restano intatte.
+-- Restituisce nil se PYTHONPATH non e' settata o e' gia' pulita.
+function M.clean_pythonpath()
+  local pythonpath = os.getenv("PYTHONPATH")
+  if not pythonpath or pythonpath == "" then return nil end
+
+  local filtered = {}
+  local removed  = {}
+  for entry in pythonpath:gmatch("[^:]+") do
+    local f = io.open(entry .. "/sitecustomize.py", "r")
+    if f then
+      f:close()
+      table.insert(removed, entry)
+    else
+      table.insert(filtered, entry)
+    end
+  end
+
+  if #removed == 0 then
+    return nil -- nessuna modifica necessaria
+  end
+
+  vim.notify(
+    "python_env: rimosso da PYTHONPATH per Mason (sitecustomize.py Python 2):\n"
+      .. table.concat(removed, "\n"),
+    vim.log.levels.INFO
+  )
+  return table.concat(filtered, ":")
+end
+
 return M
