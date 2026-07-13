@@ -178,7 +178,7 @@ return {
       local lint = require("lint")
 
       lint.linters_by_ft = {
-        python = { "flake8" },
+        python = { "pflake8" },
         javascript = { "eslint_d" },
         typescript = { "eslint_d" },
         lua = { "luacheck" },
@@ -222,7 +222,8 @@ return {
           "shfmt", -- Shell
           "sqlfmt", -- SQL
           -- Linter
-          "flake8", -- Python
+          "pyproject-flake8", -- Python
+          "pyproject-fmt", -- Python
           "eslint_d", -- JS/TS (daemon, veloce)
           "luacheck", -- Lua
           "shellcheck", -- Shell
