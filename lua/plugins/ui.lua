@@ -226,7 +226,10 @@ return {
           mode = "buffers",
           style_preset = bufferline.style_preset.default,
           themable = true,
-          numbers = "ordinal", -- mostra il numero per <M-N>
+          numbers = function(opts)
+            -- opts contiene: { ordinal = <numero progressivo>, id = <buffer_id>, lower = <lettere lowercase>, raise = <lettere uppercase> }
+            return string.format("%s|%s", opts.ordinal, opts.id)
+          end, -- mostra il numero per <M-N>
 
           -- Chiudi buffer con bdelete (close-buffers.vim già installato)
           close_command = "bdelete! %d",

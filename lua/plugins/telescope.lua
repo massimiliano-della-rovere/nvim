@@ -54,8 +54,8 @@ return {
 
     config = function()
       local telescope = require("telescope")
-      local actions   = require("telescope.actions")
-      local lga       = require("telescope-live-grep-args.actions")
+      local actions = require("telescope.actions")
+      local lga = require("telescope-live-grep-args.actions")
 
       -- ── Azione: limita la ricerca a un path specifico ──────
       -- Chiude telescope, chiede il path con vim.ui.input,
@@ -63,28 +63,27 @@ return {
       -- Il separatore di path in rg e' un argomento posizionale:
       --   rg pattern ./src/   oppure   rg pattern -- ./src/
       local function action_restrict_path(prompt_bufnr)
-        local state   = require("telescope.actions.state")
+        local state = require("telescope.actions.state")
         local current = state.get_current_line()
         actions.close(prompt_bufnr)
         vim.schedule(function()
-          vim.ui.input(
-            { prompt = "Cerca in path (es. ./src/  o  src/lib): ",
-              default = "./" },
-            function(path)
-              if not path then return end
-              path = vim.trim(path)
-              if path == "" then
-                telescope.extensions.live_grep_args.live_grep_args()
-                return
-              end
-              -- Compone la query: "pattern path"
-              -- rg interpreta il path come directory/file da cercare
-              local sep   = (current ~= "" and not current:match("%s$")) and " " or ""
-              local query = current .. sep .. path
-              telescope.extensions.live_grep_args.live_grep_args({
-                default_text = query,
-              })
-            end)
+          vim.ui.input({ prompt = "Cerca in path (es. ./src/  o  src/lib): ", default = "./" }, function(path)
+            if not path then
+              return
+            end
+            path = vim.trim(path)
+            if path == "" then
+              telescope.extensions.live_grep_args.live_grep_args()
+              return
+            end
+            -- Compone la query: "pattern path"
+            -- rg interpreta il path come directory/file da cercare
+            local sep = (current ~= "" and not current:match("%s$")) and " " or ""
+            local query = current .. sep .. path
+            telescope.extensions.live_grep_args.live_grep_args({
+              default_text = query,
+            })
+          end)
         end)
       end
 
@@ -164,102 +163,125 @@ return {
           --   CR          vai alla posizione della chiamata
           --   q / ESC     chiudi
           hierarchy = {
-            initial_multi_expand = false,  -- espandi automaticamente all'apertura
-            multi_depth          = 5,      -- livelli di espansione con 'E'
-            layout_strategy      = "horizontal",
+            initial_multi_expand = false, -- espandi automaticamente all'apertura
+            multi_depth = 5, -- livelli di espansione con 'E'
+            layout_strategy = "horizontal",
           },
         },
       })
 
       for _, ext in ipairs({
-        "docker", "emoji", "fzf", "glyph",
-        "hierarchy", "live_grep_args", "remote-sshfs", "ui-select", "undo",
+        "docker",
+        "emoji",
+        "fzf",
+        "glyph",
+        "hierarchy",
+        "live_grep_args",
+        "remote-sshfs",
+        "ui-select",
+        "undo",
       }) do
         telescope.load_extension(ext)
       end
 
       local builtin = require("telescope.builtin")
-      local lga_sc  = require("telescope-live-grep-args.shortcuts")
+      local lga_sc = require("telescope-live-grep-args.shortcuts")
       local sshfs_c = require("remote-sshfs.connections")
       local sshfs_a = require("remote-sshfs.api")
 
       -- ── Remote/sshfs ─────────────────────────────────────
-      vim.keymap.set("n", km.remote .. "c", sshfs_a.connect,    { desc = "Remote: connect" })
+      vim.keymap.set("n", km.remote .. "c", sshfs_a.connect, { desc = "Remote: connect" })
       vim.keymap.set("n", km.remote .. "d", sshfs_a.disconnect, { desc = "Remote: disconnect" })
-      vim.keymap.set("n", km.remote .. "e", sshfs_a.edit,       { desc = "Remote: edit" })
+      vim.keymap.set("n", km.remote .. "e", sshfs_a.edit, { desc = "Remote: edit" })
 
       -- ── File pickers ──────────────────────────────────────
       vim.keymap.set("n", km.find .. "f", function()
-        if sshfs_c.is_connected() then sshfs_a.find_files()
-        else builtin.find_files() end
+        if sshfs_c.is_connected() then
+          sshfs_a.find_files()
+        else
+          builtin.find_files()
+        end
       end, { desc = "Find: files" })
 
       vim.keymap.set("n", km.find .. "h", function()
-        if sshfs_c.is_connected() then sshfs_a.find_files({ hidden = true })
-        else builtin.find_files({ hidden = true }) end
+        if sshfs_c.is_connected() then
+          sshfs_a.find_files({ hidden = true })
+        else
+          builtin.find_files({ hidden = true })
+        end
       end, { desc = "Find: files (+ hidden)" })
 
       -- ── <leader>fg: live grep + argomenti rg ─────────────
       vim.keymap.set("n", km.find .. "g", function()
-        if sshfs_c.is_connected() then sshfs_a.live_grep()
-        else telescope.extensions.live_grep_args.live_grep_args() end
+        if sshfs_c.is_connected() then
+          sshfs_a.live_grep()
+        else
+          telescope.extensions.live_grep_args.live_grep_args()
+        end
       end, { desc = "Find: grep (rg args: -s -i -w -F path)" })
 
       vim.keymap.set("n", km.find .. "v", lga_sc.grep_visual_selection, { desc = "Find: grep visual" })
       vim.keymap.set("n", km.find .. "c", lga_sc.grep_word_under_cursor, { desc = "Find: grep word" })
-      vim.keymap.set("n", km.find .. "s", builtin.grep_string,           { desc = "Find: string under cursor" })
+      vim.keymap.set("n", km.find .. "s", builtin.grep_string, { desc = "Find: string under cursor" })
 
       -- ── Vim pickers ───────────────────────────────────────
-      vim.keymap.set("n", km.view .. "a", builtin.autocommands,             { desc = "View: autocommands" })
-      vim.keymap.set("n", km.view .. "b", builtin.buffers,                  { desc = "View: buffers" })
-      vim.keymap.set("n", km.view .. "B", builtin.builtin,                  { desc = "View: builtins" })
-      vim.keymap.set("n", km.view .. "c", builtin.commands,                 { desc = "View: commands" })
+      vim.keymap.set("n", km.view .. "a", builtin.autocommands, { desc = "View: autocommands" })
+      vim.keymap.set("n", km.view .. "b", builtin.buffers, { desc = "View: buffers" })
+      vim.keymap.set("n", km.view .. "B", builtin.builtin, { desc = "View: builtins" })
+      vim.keymap.set("n", km.view .. "c", builtin.commands, { desc = "View: commands" })
       vim.keymap.set("n", km.view .. "e", telescope.extensions.emoji.emoji, { desc = "View: emoji" })
-      vim.keymap.set("n", km.view .. "f", builtin.filetypes,                { desc = "View: filetypes" })
+      vim.keymap.set("n", km.view .. "f", builtin.filetypes, { desc = "View: filetypes" })
       vim.keymap.set("n", km.view .. "g", telescope.extensions.glyph.glyph, { desc = "View: glyph" })
-      vim.keymap.set("n", km.view .. "h", builtin.highlights,               { desc = "View: highlights" })
-      vim.keymap.set("n", km.view .. "i", function() vim.cmd("Telescope hierarchy incoming_calls") end, { desc = "View: incoming calls (tree)" })
-      vim.keymap.set("n", km.view .. "j", builtin.jumplist,                 { desc = "View: jumps" })
-      vim.keymap.set("n", km.view .. "k", builtin.keymaps,                  { desc = "View: keymaps" })
-      vim.keymap.set("n", km.view .. "l", builtin.loclist,                  { desc = "View: loclist" })
-      vim.keymap.set("n", km.view .. "m", builtin.marks,                    { desc = "View: marks" })
-      vim.keymap.set("n", km.view .. "o", function() vim.cmd("Telescope hierarchy outgoing_calls") end,  { desc = "View: outgoing calls (tree)" })
-      vim.keymap.set("n", km.view .. "O", builtin.vim_options,              { desc = "View: vim options" })
-      vim.keymap.set("n", km.view .. "p", builtin.man_pages,                { desc = "View: man pages" })
-      vim.keymap.set("n", km.view .. "q", builtin.quickfix,                 { desc = "View: quickfix" })
-      vim.keymap.set("n", '<leader>v"', builtin.registers,                { desc = "View: registers" })
-      vim.keymap.set("n", km.view .. "r", builtin.reloader,                 { desc = "View: lua modules" })
-      vim.keymap.set("n", km.view .. "s", builtin.symbols,                  { desc = "View: symbols" })
-      vim.keymap.set("n", km.view .. "t", builtin.tags,                     { desc = "View: tags" })
-      vim.keymap.set("n", km.view .. "u", telescope.extensions.undo.undo,   { desc = "View: undo tree" })
-      vim.keymap.set("n", km.view .. "T", builtin.current_buffer_tags,      { desc = "View: buffer tags" })
-      vim.keymap.set("n", km.view .. "z", builtin.spell_suggest,            { desc = "View: spell suggest" })
-      vim.keymap.set("n", km.view .. "!", builtin.treesitter,               { desc = "View: treesitter symbols" })
-      vim.keymap.set("n", km.view .. "/", builtin.search_history,           { desc = "View: search history" })
-      vim.keymap.set("n", km.view .. "&", builtin.command_history,          { desc = "View: command history" })
-      vim.keymap.set("n", km.view .. "?", builtin.help_tags,                { desc = "View: help tags" })
-      vim.keymap.set("n", km.view .. "~", builtin.colorscheme,              { desc = "View: colorschemes" })
-      vim.keymap.set("n", km.view .. "d", builtin.diagnostics,              { desc = "View: diagnostics" })
-      vim.keymap.set("n", km.view .. "n", "<CMD>TodoTelescope<CR>",         { desc = "View: notes/TODO" })
+      vim.keymap.set("n", km.view .. "h", builtin.highlights, { desc = "View: highlights" })
+      vim.keymap.set("n", km.view .. "i", function()
+        vim.cmd("Telescope hierarchy incoming_calls")
+      end, { desc = "View: incoming calls (tree)" })
+      vim.keymap.set("n", km.view .. "j", builtin.jumplist, { desc = "View: jumps" })
+      vim.keymap.set("n", km.view .. "k", builtin.keymaps, { desc = "View: keymaps" })
+      vim.keymap.set("n", km.view .. "l", builtin.loclist, { desc = "View: loclist" })
+      vim.keymap.set("n", km.view .. "m", builtin.marks, { desc = "View: marks" })
+      vim.keymap.set("n", km.view .. "o", function()
+        vim.cmd("Telescope hierarchy outgoing_calls")
+      end, { desc = "View: outgoing calls (tree)" })
+      vim.keymap.set("n", km.view .. "O", builtin.vim_options, { desc = "View: vim options" })
+      vim.keymap.set("n", km.view .. "p", builtin.man_pages, { desc = "View: man pages" })
+      vim.keymap.set("n", km.view .. "q", builtin.quickfix, { desc = "View: quickfix" })
+      vim.keymap.set("n", '<leader>v"', builtin.registers, { desc = "View: registers" })
+      vim.keymap.set("n", km.view .. "r", builtin.reloader, { desc = "View: lua modules" })
+      vim.keymap.set("n", km.view .. "s", builtin.symbols, { desc = "View: symbols" })
+      vim.keymap.set("n", km.view .. "t", builtin.tags, { desc = "View: tags" })
+      vim.keymap.set("n", km.view .. "u", telescope.extensions.undo.undo, { desc = "View: undo tree" })
+      vim.keymap.set("n", km.view .. "T", builtin.current_buffer_tags, { desc = "View: buffer tags" })
+      vim.keymap.set("n", km.view .. "z", builtin.spell_suggest, { desc = "View: spell suggest" })
+      vim.keymap.set("n", km.view .. "!", builtin.treesitter, { desc = "View: treesitter symbols" })
+      vim.keymap.set("n", km.view .. "/", builtin.search_history, { desc = "View: search history" })
+      vim.keymap.set("n", km.view .. "&", builtin.command_history, { desc = "View: command history" })
+      vim.keymap.set("n", km.view .. "?", builtin.help_tags, { desc = "View: help tags" })
+      vim.keymap.set("n", km.view .. "~", builtin.colorscheme, { desc = "View: colorschemes" })
+      vim.keymap.set("n", km.view .. "d", builtin.diagnostics, { desc = "View: diagnostics" })
+      vim.keymap.set("n", km.view .. "n", "<CMD>TodoTelescope<CR>", { desc = "View: notes/TODO" })
 
       -- ── Git pickers ───────────────────────────────────────
       vim.keymap.set("n", km.git .. "b", builtin.git_branches, { desc = "Git: branches" })
       vim.keymap.set("n", km.git .. "B", builtin.git_bcommits, { desc = "Git: blame" })
-      vim.keymap.set("n", km.git .. "c", builtin.git_commits,  { desc = "Git: commits" })
-      vim.keymap.set("n", km.git .. "s", builtin.git_status,   { desc = "Git: status" })
-      vim.keymap.set("n", km.git .. "S", builtin.git_stash,    { desc = "Git: stash" })
+      vim.keymap.set("n", km.git .. "c", builtin.git_commits, { desc = "Git: commits" })
+      vim.keymap.set("n", km.git .. "s", builtin.git_status, { desc = "Git: status" })
+      vim.keymap.set("n", km.git .. "S", builtin.git_stash, { desc = "Git: stash" })
 
       -- ── Docker ────────────────────────────────────────────
       for key, cmd in pairs({
-        c = "containers", d = "docker",   f = "files",
-        i = "images",     m = "machines", n = "networks",
-        o = "contexts",   s = "swarm",    v = "volumes",
+        c = "containers",
+        d = "docker",
+        f = "files",
+        i = "images",
+        m = "machines",
+        n = "networks",
+        o = "contexts",
+        s = "swarm",
+        v = "volumes",
       }) do
-        vim.keymap.set("n", km.docker .. key,
-          telescope.extensions.docker[cmd],
-          { desc = "Docker: " .. cmd })
+        vim.keymap.set("n", km.docker .. key, telescope.extensions.docker[cmd], { desc = "Docker: " .. cmd })
       end
     end,
   },
-
 }
