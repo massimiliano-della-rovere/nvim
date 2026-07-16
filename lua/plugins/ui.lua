@@ -31,7 +31,6 @@ return {
     end,
     config = function()
       require("which-key").add({
-
         -- ── Gruppi radice ─────────────────────────────────
         { "<leader>", group = "VISUAL <leader>" },
         { km.ai, group = "CodeCompanion" },
@@ -81,18 +80,21 @@ return {
         { km.test .. "w", desc = "Test: watch file" },
         { km.test .. "x", desc = "Test: stop" },
 
+        -- ── AI ────────────────────────────────────────────
+        { km.agentic, group = "Agentic (Copilot ACP)" },
+
         -- ── Harpoon ──────────────────────────────────────
-        { km.harpoon .. "a", desc = "Harpoon: add file" },
-        { km.harpoon .. "h", desc = "Harpoon: menu" },
-        { km.harpoon .. "f", desc = "Harpoon: telescope picker" },
-        { km.harpoon .. "[", desc = "Harpoon: prev file" },
-        { km.harpoon .. "]", desc = "Harpoon: next file" },
-        { "<M-1>", desc = "Harpoon: file 1" },
-        { "<M-2>", desc = "Harpoon: file 2" },
-        { "<M-3>", desc = "Harpoon: file 3" },
-        { "<M-4>", desc = "Harpoon: file 4" },
-        { "<M-5>", desc = "Harpoon: file 5" },
-        { "<M-6>", desc = "Harpoon: file 6" },
+        -- { km.harpoon .. "a", desc = "Harpoon: add file" },
+        -- { km.harpoon .. "h", desc = "Harpoon: menu" },
+        -- { km.harpoon .. "f", desc = "Harpoon: telescope picker" },
+        -- { km.harpoon .. "[", desc = "Harpoon: prev file" },
+        -- { km.harpoon .. "]", desc = "Harpoon: next file" },
+        -- { "<M-1>", desc = "Harpoon: file 1" },
+        -- { "<M-2>", desc = "Harpoon: file 2" },
+        -- { "<M-3>", desc = "Harpoon: file 3" },
+        -- { "<M-4>", desc = "Harpoon: file 4" },
+        -- { "<M-5>", desc = "Harpoon: file 5" },
+        -- { "<M-6>", desc = "Harpoon: file 6" },
 
         -- ── CodeCompanion (Claude) ─────────────────────
         -- { km.ai .. "c", desc = "Claude: chat toggle" },
