@@ -120,8 +120,9 @@ return {
           -- shfmt: per la BASh
           shfmt = {
             prepend_args = {
-              "-i",
+              "--indent",
               "2",
+              "--case-indent",
             },
           },
           -- sqlfmt: formattatore SQL moderno
