@@ -41,6 +41,7 @@ M.test = "<leader>T" -- Neotest
 M.view = "<leader>v" -- View  (telescope pickers)
 M.workspace = "<leader>w" -- LSP workspace folders
 M.trouble = "<leader>x" -- Trouble  (diagnostics list)
+M.agentic = "<leader>z" -- Agentic.nvim (Copilot CLI via ACP)
 
 -- ── Helper: prefix + suffix ───────────────────────────────────
 -- Uso: km.k("lsp", "f")  →  "<leader>lf"

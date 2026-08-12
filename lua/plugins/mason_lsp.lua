@@ -44,6 +44,34 @@ local BORDER = "single"
 local hostname = (vim.uv.os_gethostname() or "default"):gsub("[^%w.-]", "_")
 local mason_install_dir = vim.fn.stdpath("data") .. "/mason-" .. hostname
 
+-- Server LSP Python dipende dal sistema:
+--   Python 2.x: jedi-language-server
+--   Python 3.x: basedpyright
+-- (logica di rilevamento in lua/utils/python_env.lua)
+local python_env = require("utils.python_env")
+local python_lsp = python_env.is_python2() and "jedi_language_server" or "basedpyright"
+
+-- Su ambienti Python 2.x, PYTHONPATH contiene path di progetto che
+-- includono un sitecustomize.py scritto per Python 2 (chiama
+-- sys.setdefaultencoding(), rimosso in Python 3). Quando Mason
+-- spawna python3 per creare il venv di jedi-language-server,
+-- Python 3 carica quel sitecustomize.py e crasha:
+--   AttributeError: module 'sys' has no attribute 'setdefaultencoding'
+--
+-- Fix chirurgico: rimuoviamo da PYTHONPATH solo le voci che
+-- contengono sitecustomize.py, lasciando intatte le altre
+-- (es. /tcwa/code/tabula_clinica che non ha sitecustomize.py).
+-- La directory rimossa (es. /tcwa/code/genro/gnrpy) non serve
+-- a python3: jedi-language-server usa il venv Python 2.7
+-- direttamente tramite settings.jedi.interpreter.
+if python_env.is_python2() then
+  local cleaned = python_env.clean_pythonpath()
+  if cleaned ~= nil then
+    vim.env.PYTHONPATH = cleaned
+  end
+  vim.env.PYTHONNOUSERSITE = "1"
+end
+
 local mason_servers = {
   "bashls", -- Bash          → lsp/bashls.lua
   "cssls", -- CSS           → lsp/cssls.lua
@@ -52,7 +80,7 @@ local mason_servers = {
   "html", -- HTML          → lsp/html.lua
   "jsonls", -- JSON          → lsp/jsonls.lua
   "lua_ls", -- Lua           → lsp/lua_ls.lua
-  "basedpyright", -- Python        → lsp/basedpyright.lua
+  python_lsp, -- Python        → lsp/basedpyright.lua o lsp/jedi_language_server.lua
   "sqlls", -- SQL           → lsp/sqlls.lua
   "taplo", -- TOML          → lsp/taplo.lua
   "ts_ls", -- TS/JS         → lsp/ts_ls.lua

@@ -1,4 +1,29 @@
 local km = require("keymaps")
+local python_env = require("utils.python_env")
+local is_python2 = python_env.is_python2()
+
+-- Su ambienti Python 2.x, i seguenti tool non sono compatibili
+-- e vengono esclusi da formatter, linter e installazione Mason:
+--
+--   black, isort  → Python 3.6+
+--   flake8        → Python 3.6+
+--   sqlfmt        → Python 3.8+
+--   yamllint      → Python 3.10+
+--
+-- Nota: yamlfmt (Go), shfmt (Go), prettier (npm), stylua (Rust),
+-- shellcheck (Haskell), eslint_d (npm), luacheck (Lua),
+-- markdownlint (npm) non dipendono da Python e restano attivi.
+--
+-- jedi-language-server (mason_lsp.lua) fornisce diagnostics
+-- di base per Python come sostituto di flake8.
+local python_formatters = is_python2 and {} or { "isort", "black" }
+local python_linters    = is_python2 and {} or { "flake8" }
+local sql_formatters    = is_python2 and {} or { "sqlfmt" }
+local yaml_linters      = is_python2 and {} or { "yamllint" }
+local python_tools      = is_python2 and {} or { "black", "isort", "flake8" }
+local sql_tools         = is_python2 and {} or { "sqlfmt" }
+local yaml_lint_tools   = is_python2 and {} or { "yamllint" }
+
 -- ============================================================
 -- plugins/formatting.lua  --  Neovim 0.12 / 0.13-compatible
 -- ============================================================
@@ -29,7 +54,7 @@ return {
         -- Lista ordinata: vengono eseguiti in sequenza.
         -- "lsp" usa il formatter del server LSP come fallback.
         formatters_by_ft = {
-          python = { "isort", "black" },
+          python = python_formatters,
           javascript = { "prettier" },
           typescript = { "prettier" },
           javascriptreact = { "prettier" },
@@ -44,7 +69,7 @@ return {
           lua = { "stylua" },
           sh = { "shfmt" },
           bash = { "shfmt" },
-          sql = { "sqlfmt" },
+          sql = sql_formatters,
           toml = { "taplo" }, -- gia' gestito da taplo LSP
           -- fallback globale: usa il formatter LSP se disponibile
           ["_"] = { "trim_whitespace" },
@@ -185,7 +210,7 @@ return {
         lua = { "luacheck" },
         sh = { "shellcheck" },
         bash = { "shellcheck" },
-        yaml = { "yamllint" },
+        yaml = yaml_linters,
         markdown = { "markdownlint" },
       }
 
@@ -213,24 +238,22 @@ return {
     dependencies = { "mason-org/mason.nvim" },
     config = function()
       require("mason-tool-installer").setup({
-        ensure_installed = {
-          -- Formatter
-          "black", -- Python
-          "isort", -- Python imports
-          "prettier", -- JS/TS/CSS/HTML/JSON/Markdown
-          "stylua", -- Lua
-          "yamlfmt", -- YAML
-          "shfmt", -- Shell
-          "sqlfmt", -- SQL
-          -- Linter
-          "pyproject-flake8", -- Python
-          "pyproject-fmt", -- Python
-          "eslint_d", -- JS/TS (daemon, veloce)
-          "luacheck", -- Lua
-          "shellcheck", -- Shell
-          "yamllint", -- YAML
-          "markdownlint", -- Markdown
-        },
+        ensure_installed = vim.list_extend(
+          vim.list_extend(
+            vim.list_extend({
+              -- Formatter (sempre installati, non dipendono da Python)
+              "prettier",     -- JS/TS/CSS/HTML/JSON/Markdown  (npm)
+              "stylua",       -- Lua                           (Rust)
+              "yamlfmt",      -- YAML                          (Go)
+              "shfmt",        -- Shell                         (Go)
+              -- Linter (sempre installati)
+              "eslint_d",     -- JS/TS                         (npm)
+              "luacheck",     -- Lua                           (Lua)
+              "shellcheck",   -- Shell                         (Haskell)
+              "markdownlint", -- Markdown                      (npm)
+            }, python_tools),    -- black, isort, flake8  (skip su py2)
+          sql_tools),            -- sqlfmt                (skip su py2)
+        yaml_lint_tools),        -- yamllint              (skip su py2)
         auto_update = false,
         run_on_config = true,
       })
