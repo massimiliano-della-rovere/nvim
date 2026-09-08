@@ -17,12 +17,12 @@ local is_python2 = python_env.is_python2()
 -- jedi-language-server (mason_lsp.lua) fornisce diagnostics
 -- di base per Python come sostituto di flake8.
 local python_formatters = is_python2 and {} or { "isort", "black" }
-local python_linters    = is_python2 and {} or { "flake8" }
-local sql_formatters    = is_python2 and {} or { "sqlfmt" }
-local yaml_linters      = is_python2 and {} or { "yamllint" }
-local python_tools      = is_python2 and {} or { "black", "isort", "flake8" }
-local sql_tools         = is_python2 and {} or { "sqlfmt" }
-local yaml_lint_tools   = is_python2 and {} or { "yamllint" }
+local python_linters = is_python2 and {} or { "pflake8" }
+local sql_formatters = is_python2 and {} or { "sqlfmt" }
+local yaml_linters = is_python2 and {} or { "yamllint" }
+local python_tools = is_python2 and {} or { "black", "isort", "flake8" }
+local sql_tools = is_python2 and {} or { "sqlfmt" }
+local yaml_lint_tools = is_python2 and {} or { "yamllint" }
 
 -- ============================================================
 -- plugins/formatting.lua  --  Neovim 0.12 / 0.13-compatible
@@ -145,8 +145,9 @@ return {
           -- shfmt: per la BASh
           shfmt = {
             prepend_args = {
-              "-i",
+              "--indent",
               "2",
+              "--case-indent",
             },
           },
           -- sqlfmt: formattatore SQL moderno
@@ -241,18 +242,20 @@ return {
           vim.list_extend(
             vim.list_extend({
               -- Formatter (sempre installati, non dipendono da Python)
-              "prettier",     -- JS/TS/CSS/HTML/JSON/Markdown  (npm)
-              "stylua",       -- Lua                           (Rust)
-              "yamlfmt",      -- YAML                          (Go)
-              "shfmt",        -- Shell                         (Go)
+              "prettier", -- JS/TS/CSS/HTML/JSON/Markdown  (npm)
+              "stylua", -- Lua                           (Rust)
+              "yamlfmt", -- YAML                          (Go)
+              "shfmt", -- Shell                         (Go)
               -- Linter (sempre installati)
-              "eslint_d",     -- JS/TS                         (npm)
-              "luacheck",     -- Lua                           (Lua)
-              "shellcheck",   -- Shell                         (Haskell)
+              "eslint_d", -- JS/TS                         (npm)
+              "luacheck", -- Lua                           (Lua)
+              "shellcheck", -- Shell                         (Haskell)
               "markdownlint", -- Markdown                      (npm)
-            }, python_tools),    -- black, isort, flake8  (skip su py2)
-          sql_tools),            -- sqlfmt                (skip su py2)
-        yaml_lint_tools),        -- yamllint              (skip su py2)
+            }, python_tools), -- black, isort, flake8  (skip su py2)
+            sql_tools
+          ), -- sqlfmt                (skip su py2)
+          yaml_lint_tools
+        ), -- yamllint              (skip su py2)
         auto_update = false,
         run_on_config = true,
       })
