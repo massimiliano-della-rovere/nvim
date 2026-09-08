@@ -191,6 +191,12 @@ return {
           inc_rename = false,
           lsp_doc_border = false,
         },
+        routes = {
+          {
+            view = "notify",
+            filter = { event = "msg_showmode" },
+          },
+        },
       })
       require("telescope").load_extension("noice")
     end,
