@@ -76,11 +76,16 @@ function M.clean_pythonpath()
     return nil -- nessuna modifica necessaria
   end
 
-  vim.notify(
-    "python_env: rimosso da PYTHONPATH per Mason (sitecustomize.py Python 2):\n"
-      .. table.concat(removed, "\n"),
-    vim.log.levels.INFO
-  )
+  -- Notifica silenziata di default (evita l'hit-enter-prompt in avvio,
+  -- causato da messaggi multi-riga mostrati prima che l'UI sia pronta).
+  -- Per riattivarla in debug: :lua vim.g.python_env_debug = true
+  if vim.g.python_env_debug then
+    vim.notify(
+      "python_env: rimosso da PYTHONPATH per Mason (sitecustomize.py Python 2):\n"
+        .. table.concat(removed, "\n"),
+      vim.log.levels.INFO
+    )
+  end
   return table.concat(filtered, ":")
 end
 
