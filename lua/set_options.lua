@@ -8,6 +8,8 @@ vim.opt.expandtab = true
 vim.opt.tabstop = 2
 vim.opt.softtabstop = 2
 vim.opt.shiftwidth = 2
+-- Default globale: bashscript case items must be indented
+vim.g.sh_indent_case_labels = 1
 
 -- ── Per-filetype: larghezza corretta ─────────────────────────
 -- FileType imposta la larghezza giusta per ogni linguaggio.
