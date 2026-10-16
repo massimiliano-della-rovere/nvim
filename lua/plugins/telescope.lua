@@ -48,7 +48,7 @@ return {
       "xiyaowong/telescope-emoji.nvim",
       "ghassan0/telescope-glyph.nvim",
       "nvim-telescope/telescope-ui-select.nvim",
-      "lpoto/telescope-docker.nvim",
+      -- "lpoto/telescope-docker.nvim",
       "debugloop/telescope-undo.nvim",
     },
 
@@ -90,7 +90,7 @@ return {
       telescope.setup({
         defaults = {
           layout_strategy = "horizontal",
-          layout_config   = { height = 0.999, width = 0.999 },
+          layout_config = { height = 0.999, width = 0.999 },
           -- treesitter = false nella preview: evita il conflitto tra
           -- l'highlighting nativo che attiviamo in treesitter.lua
           -- (autocmd FileType → vim.treesitter.start()) e il tentativo
@@ -171,7 +171,7 @@ return {
       })
 
       for _, ext in ipairs({
-        "docker",
+        -- "docker",
         "emoji",
         "fzf",
         "glyph",
@@ -269,19 +269,19 @@ return {
       vim.keymap.set("n", km.git .. "S", builtin.git_stash, { desc = "Git: stash" })
 
       -- ── Docker ────────────────────────────────────────────
-      for key, cmd in pairs({
-        c = "containers",
-        d = "docker",
-        f = "files",
-        i = "images",
-        m = "machines",
-        n = "networks",
-        o = "contexts",
-        s = "swarm",
-        v = "volumes",
-      }) do
-        vim.keymap.set("n", km.docker .. key, telescope.extensions.docker[cmd], { desc = "Docker: " .. cmd })
-      end
+      -- for key, cmd in pairs({
+      --   c = "containers",
+      --   d = "docker",
+      --   f = "files",
+      --   i = "images",
+      --   m = "machines",
+      --   n = "networks",
+      --   o = "contexts",
+      --   s = "swarm",
+      --   v = "volumes",
+      -- }) do
+      --   vim.keymap.set("n", km.docker .. key, telescope.extensions.docker[cmd], { desc = "Docker: " .. cmd })
+      -- end
     end,
   },
 }
