@@ -44,17 +44,17 @@ return {
 
   {
     -- Adds git related signs to the gutter, as well as utilities for managing changes
-  -- https://github.com/lewis6991/gitsigns.nvim
+    -- https://github.com/lewis6991/gitsigns.nvim
     "lewis6991/gitsigns.nvim",
     opts = {
       -- See `:help gitsigns.txt`
       signs = {
-        add          = { text = "+" },
-        change       = { text = "❙" }, -- ❚" }, -- │" },
-        delete       = { text = "_" },
-        topdelete    = { text = "‾" },
+        add = { text = "+" },
+        change = { text = "❙" }, -- ❚" }, -- │" },
+        delete = { text = "_" },
+        topdelete = { text = "‾" },
         changedelete = { text = "~" },
-        untracked    = { text = "┆" },
+        untracked = { text = "┆" },
       },
       on_attach = function(bufnr)
         local gs = package.loaded.gitsigns
@@ -66,34 +66,28 @@ return {
         end
 
         -- Navigation
-        vim.keymap.set(
-          { "n", "v" }, "]c",
-          function()
-            if vim.wo.diff then
-              return "]c"
-            end
-            vim.schedule(gs.next_hunk)
-            return "<Ignore>"
-          end,
-          { expr = true, buffer = bufnr, desc = "Git: To next Change" })
-        vim.keymap.set(
-          { "n", "v" }, "[c",
-          function()
-            if vim.wo.diff then
-              return "[c"
-            end
-            vim.schedule(gs.prev_hunk)
-            return "<Ignore>"
-          end,
-          { expr = true, buffer = bufnr, desc = "Git: To prev Change" })
+        vim.keymap.set({ "n", "v" }, "]c", function()
+          if vim.wo.diff then
+            return "]c"
+          end
+          vim.schedule(gs.next_hunk)
+          return "<Ignore>"
+        end, { expr = true, buffer = bufnr, desc = "Git: To next Change" })
+        vim.keymap.set({ "n", "v" }, "[c", function()
+          if vim.wo.diff then
+            return "[c"
+          end
+          vim.schedule(gs.prev_hunk)
+          return "<Ignore>"
+        end, { expr = true, buffer = bufnr, desc = "Git: To prev Change" })
 
         -- Actions
         -- visual mode
         map("v", km.fugitive .. "s", function()
-          gs.stage_hunk({ vim.fn.line ".", vim.fn.line "v" })
+          gs.stage_hunk({ vim.fn.line("."), vim.fn.line("v") })
         end, { desc = "GIT: Stage hunk" })
         map("v", km.fugitive .. "r", function()
-          gs.reset_hunk({ vim.fn.line ".", vim.fn.line "v" })
+          gs.reset_hunk({ vim.fn.line("."), vim.fn.line("v") })
         end, { desc = "GIT: Reset hunk" })
         -- normal mode
         map("n", km.fugitive .. "s", gs.stage_hunk, { desc = "Git: stage hunk" })
@@ -133,122 +127,160 @@ return {
   --   │  giallo  righe modificate      (GitSignsChange)
   --   ▾  rosso   righe eliminate       (GitSignsDelete)
   --   ─  colori diagnostici            (Error / Warn / Info / Hint)
-  --   █  grigio  viewport corrente     (handle)
+  --   █  grigio  viewport corrente     (thumb)
   --
   -- La barra sparisce automaticamente se l'intero file e' visibile
   -- sullo schermo (hide_if_all_visible = true) e viene esclusa
   -- dai buffer di servizio (aerial, neo-tree, oil, alpha, dap ...).
   --
   -- Dati letti da: lewis6991/gitsigns.nvim (gia' nel config)
-  -- tramite require("scrollbar.handlers.gitsigns").setup().
+  -- tramite il provider nativo providers.gitsigns = true (v2).
   -- ============================================================
   {
     "petertriho/nvim-scrollbar",
+    -- TODO: rimuovere branch dopo il 2026-11-16
+    --       (v2 sostituisce main; il branch "refactor/v2" viene
+    --       eliminato e il tag "v2.0.0" sara' disponibile)
+    branch = "refactor/v2",
     dependencies = { "lewis6991/gitsigns.nvim" },
     event = { "BufReadPost", "BufNewFile" },
     config = function()
       require("scrollbar").setup({
-        show                = true,
-        show_in_active_only = false,
-        set_highlights      = true,
-        folds               = 1000,
-        max_lines           = false,
-        hide_if_all_visible = true,   -- nasconde quando tutto il file e' visibile
-        throttle_ms         = 100,
 
-        -- Handle: indicatore del viewport corrente (la "finestra" sul file)
-        handle = {
-          text      = " ",
-          blend     = 30,             -- leggermente semitrasparente
-          highlight = "CursorColumn",
-          hide_if_all_visible = true,
+        -- ── Top-level (v2 accetta solo queste chiavi al top-level):
+        --    set_highlights, exclude, providers, marks, scrollbar, minimap
+        set_highlights = true,
+
+        -- ── Esclusioni (v1: excluded_buftypes / excluded_filetypes)
+        --    Lista → sostituisce i default; tabella {nome=true} → aggiunge.
+        exclude = {
+          buftypes = {
+            "terminal",
+            "nofile",
+            "quickfix",
+            "prompt",
+          },
+          filetypes = {
+            "aerial", -- outline simboli
+            "alpha", -- dashboard
+            "neo-tree", -- file browser
+            "oil", -- file browser
+            "TelescopePrompt",
+            "noice",
+            "notify",
+            "lazy",
+            "mason",
+            "help",
+            "DiffviewFiles",
+            "dap-repl",
+            "dapui_watches",
+            "dapui_console",
+            "dapui_stacks",
+            "dapui_breakpoints",
+            "dapui_scopes",
+            "toggleterm",
+          },
         },
 
-        -- Marks: indicatori proporzionali dei punti di interesse nel file
+        -- ── Provider (v1: handlers)
+        --    gitsigns: non richiede piu' require("scrollbar.handlers.gitsigns").setup()
+        --    handle:   rimosso come provider; il thumb e' sempre attivo nel layout
+        --    search:   ora nativo (legge / e ?), non richiede nvim-hlslens
+        providers = {
+          cursor = true,
+          diagnostic = true, -- posizioni diagnostics LSP
+          gitsigns = true, -- hunks Git su tutto il file
+          search = false, -- disabilitato: non usiamo la ricerca sulla barra
+          ale = false,
+        },
+
+        -- ── Marks: formato invariato tra v1 e v2
+        --    (text, priority, highlight-come-stringa restano uguali)
         marks = {
           Cursor = {
-            text      = "\xe2\x94\x80",  -- U+2500 ─
-            priority  = 0,
+            text = "\xe2\x94\x80", -- U+2500 ─
+            priority = 0,
             highlight = "Normal",
           },
           Search = {
-            text      = { "\xe2\x94\x80", "\xe2\x95\x90" },  -- ─  ═
-            priority  = 1,
+            text = { "\xe2\x94\x80", "\xe2\x95\x90" }, -- ─  ═
+            priority = 1,
             highlight = "Search",
           },
           Error = {
-            text      = { "\xe2\x94\x80", "\xe2\x95\x90" },
-            priority  = 2,
+            text = { "\xe2\x94\x80", "\xe2\x95\x90" },
+            priority = 2,
             highlight = "DiagnosticVirtualTextError",
           },
           Warn = {
-            text      = { "\xe2\x94\x80", "\xe2\x95\x90" },
-            priority  = 3,
+            text = { "\xe2\x94\x80", "\xe2\x95\x90" },
+            priority = 3,
             highlight = "DiagnosticVirtualTextWarn",
           },
           Info = {
-            text      = { "\xe2\x94\x80", "\xe2\x95\x90" },
-            priority  = 4,
+            text = { "\xe2\x94\x80", "\xe2\x95\x90" },
+            priority = 4,
             highlight = "DiagnosticVirtualTextInfo",
           },
           Hint = {
-            text      = { "\xe2\x94\x80", "\xe2\x95\x90" },
-            priority  = 5,
+            text = { "\xe2\x94\x80", "\xe2\x95\x90" },
+            priority = 5,
             highlight = "DiagnosticVirtualTextHint",
           },
           Misc = {
-            text      = { "\xe2\x94\x80", "\xe2\x95\x90" },
-            priority  = 6,
+            text = { "\xe2\x94\x80", "\xe2\x95\x90" },
+            priority = 6,
             highlight = "Normal",
           },
           -- Git: usa le stesse highlight di gitsigns per coerenza cromatica
           GitAdd = {
-            text      = "\xe2\x94\x82",  -- U+2502 │  riga aggiunta
-            priority  = 7,
+            text = "\xe2\x94\x82", -- U+2502 │  riga aggiunta
+            priority = 7,
             highlight = "GitSignsAdd",
           },
           GitChange = {
-            text      = "\xe2\x94\x82",  -- U+2502 │  riga modificata
-            priority  = 7,
+            text = "\xe2\x94\x82", -- U+2502 │  riga modificata
+            priority = 7,
             highlight = "GitSignsChange",
           },
           GitDelete = {
-            text      = "\xe2\x96\xbe",  -- U+25BE ▾  riga eliminata
-            priority  = 7,
+            text = "\xe2\x96\xbe", -- U+25BE ▾  riga eliminata
+            priority = 7,
             highlight = "GitSignsDelete",
           },
         },
 
-        excluded_buftypes = {
-          "terminal",
-          "nofile",
-          "quickfix",
-          "prompt",
-        },
+        -- ── Blocco scrollbar
+        --    Tutte le opzioni che in v1 erano al top-level o in "handle"
+        --    ora vivono qui, tranne set_highlights e marks.
+        scrollbar = {
+          -- v1: show = true (implicito: lo scrollbar e' visibile)
+          -- v1: show_in_active_only = false → visibility = "all" (default v2)
+          -- v1: max_lines = false → max_lines = false
+          max_lines = false,
+          -- v1: hide_if_all_visible = true
+          hide_if_all_visible = true,
+          -- v1: throttle_ms = 100  (default v2: 16 ms)
+          throttle_ms = 100,
+          -- v1: folds = 1000 → unit = "screenline"
+          --     "screenline" considera fold chiusi e wrapped lines;
+          --     "line" (default v2) non li considera.
+          unit = "screenline",
 
-        excluded_filetypes = {
-          "aerial",           -- outline simboli
-          "alpha",            -- dashboard
-          "neo-tree",         -- file browser
-          "oil",              -- file browser
-          "TelescopePrompt",
-          "noice",
-          "notify",
-          "lazy",
-          "mason",
-          "help",
-          "DiffviewFiles",
-          "dap-repl",
-          "dapui_watches",
-          "dapui_console",
-          "dapui_stacks",
-          "dapui_breakpoints",
-          "dapui_scopes",
-          "toggleterm",
-        },
+          -- v1: handle → thumb
+          --     handle.highlight "CursorColumn" → thumb.highlight
+          --     (default v2 e' "PmenuThumb"; manteniamo il vecchio)
+          thumb = {
+            text = " ",
+            blend = 30, -- leggermente semitrasparente
+            highlight = "CursorColumn",
+            hide_if_all_visible = true,
+          },
 
-        autocmd = {
-          render = {
+          -- v1: autocmd.render → scrollbar.events
+          --     autocmd.clear rimosso in v2 (usare visibility = "active"
+          --     se si vuole nascondere la barra nelle finestre inattive)
+          events = {
             "BufWinEnter",
             "TabEnter",
             "TermEnter",
@@ -258,29 +290,10 @@ return {
             "VimResized",
             "WinScrolled",
           },
-          clear = {
-            "BufWinLeave",
-            "TabLeave",
-            "TermLeave",
-            "WinLeave",
-          },
-        },
-
-        handlers = {
-          cursor     = true,
-          diagnostic = true,   -- mostra posizioni diagnostics LSP
-          gitsigns   = true,   -- mostra hunks Git su tutto il file
-          handle     = true,
-          search     = false,  -- richiede nvim-hlslens
-          ale        = false,
         },
       })
-
-      -- Attiva la lettura degli hunk da gitsigns.
-      -- Questo e' il bridge che proietta i dati di gitsigns.nvim
-      -- sulla barra destra proporzionalmente all'altezza del file,
-      -- replicando il comportamento del Change Overview Ruler di IntelliJ.
-      require("scrollbar.handlers.gitsigns").setup()
+      -- require("scrollbar.handlers.gitsigns").setup() RIMOSSO:
+      -- in v2 gitsigns e' un provider nativo (providers.gitsigns = true sopra).
     end,
   },
 
@@ -303,9 +316,7 @@ return {
     -- setting the keybinding for LazyGit with 'keys' is recommended in
     -- order to load the plugin when the command is run for the first time
     keys = {
-      { km.git .. "l", "<cmd>LazyGit<cr>", desc = "LazyGit" }
+      { km.git .. "l", "<cmd>LazyGit<cr>", desc = "LazyGit" },
     },
   },
-
 }
-
