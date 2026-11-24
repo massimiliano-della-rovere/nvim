@@ -461,4 +461,38 @@ return {
       vim.keymap.set("n", km.notes .. "m", "<CMD>RenderMarkdown toggle<CR>", { desc = "Markdown: toggle render" })
     end,
   },
+
+  -- ── Suggerimenti per il codice (FastAPI) ───────────────────────────
+  {
+    "lucasdetoledo4/fastapi-nvim",
+    ft = "python",
+    dependencies = { "nvim-telescope/telescope.nvim" },
+    keys = {
+      {
+        km.fastapi .. "a",
+        function()
+          require("fastapi-nvim").routes()
+        end,
+        desc = "FastAPI: browse routes",
+      },
+      -- :FastAPIDebug
+      {
+        km.fastapi .. "d",
+        function()
+          vim.cmd(":FastAPIDebug")
+        end,
+        desc = "FastAPI: debug",
+      },
+      {
+        km.fastapi .. "r",
+        function()
+          require("fastapi-nvim").refresh()
+        end,
+        desc = "FastAPI: refresh routes",
+      },
+    },
+    config = function()
+      require("fastapi-nvim").setup()
+    end,
+  },
 }

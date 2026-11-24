@@ -32,6 +32,7 @@ M.lsp = "<leader>l" -- LSP / code actions
 M.lsp_hier = "<leader>lh" -- LSP / gerarchia OOP
 M.notes = "<leader>n" -- Note / TODO / markdown
 M.oil = "<leader>o" -- Oil file browser
+M.fastapi = "<leader>p" -- FastAPI
 M.rename = "<leader>r" -- Rename simboli
 M.remote = "<leader>R" -- Remote SSH / sshfs
 M.surround = "<leader>S" -- nvim-surround
